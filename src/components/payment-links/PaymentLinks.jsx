@@ -52,10 +52,13 @@ export default function PaymentLinks() {
               <motion.div
                 key={idx}
                 onClick={() =>
-                  navigate(`/${userAlias}/detail/1?scheme=${colorScheme}`, {
-                    state: { layoutId: `payment-card-${userAlias}-1` },
-                    preventScrollReset: false,
-                  })
+                  navigate(
+                    `/${userAlias}/detail/1?scheme=${colorScheme}&id=${alias.id}`,
+                    {
+                      state: { layoutId: `payment-card-${userAlias}-1` },
+                      preventScrollReset: false,
+                    }
+                  )
                 }
                 layout
                 layoutId={`payment-card-${userAlias}-2`}

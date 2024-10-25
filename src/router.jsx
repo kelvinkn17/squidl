@@ -23,8 +23,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/:alias/detail/:parent",
-        loader: ({ params }) => {
-          return `${params.alias}.squidl.me`;
+        loader: ({ params, request }) => {
+          const url = new URL(request.url);
+          const id = url.searchParams.get("id");
+
+          return { fullAlias: `${params.alias}.squidl.me`, aliasId: id };
         },
         element: <AliasDetailPage />,
         children: [

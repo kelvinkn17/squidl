@@ -1,4 +1,4 @@
-import { Button, Skeleton, Tooltip } from "@nextui-org/react";
+import { Button, Skeleton, Spinner, Tooltip } from "@nextui-org/react";
 import { Icons } from "../shared/Icons.jsx";
 import TxItem from "./TxItem.jsx";
 import toast from "react-hot-toast";
@@ -20,16 +20,17 @@ import {
   CARDS_SCHEME,
 } from "../home/dashboard/PaymentLinksDashboard.jsx";
 import { cnm } from "../../utils/style.js";
-import { shortenId } from "../../utils/formatting-utils.js";
+import { formatCurrency, shortenId } from "../../utils/formatting-utils.js";
 import SquidLogo from "../../assets/squidl-logo.svg?react";
 import { shortenAddress } from "../../utils/string.js";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
+import { squidlAPI } from "../../api/squidl.js";
 
 export default function AliasDetail() {
   const navigate = useNavigate();
   const setBack = useSetAtom(isBackAtom);
   const userWallets = useUserWallets();
-  const fullAlias = useLoaderData();
+  const { fullAlias, aliasId } = useLoaderData();
   const { alias, parent } = useParams();
   const [searchParams] = useSearchParams();
   const scheme = searchParams.get("scheme");
@@ -61,6 +62,8 @@ export default function AliasDetail() {
   const [aliasAddress, setAliasAddress] = useState(null);
   const [metaAdd, setMetaAdd] = useState(null);
   const [isLoadingAlias, setLoading] = useState(false);
+  const [assets, setAssets] = useState(null);
+  const [isLoadingAssets, setLoadingAssets] = useState(false);
 
   async function generateStealthAddress() {
     setLoading(true);
@@ -92,9 +95,23 @@ export default function AliasDetail() {
     setMetaAdd(metaAddress);
   }
 
+  async function getAssets() {
+    setLoadingAssets(true);
+    try {
+      const res = await squidlAPI.get(`/user/wallet-assets/${aliasId}`);
+
+      setAssets(res.data.data.tokenAssets);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoadingAssets(false);
+    }
+  }
+
   useEffect(() => {
     generateStealthAddress();
     getMetaadd();
+    getAssets();
   }, []);
 
   return (
@@ -300,25 +317,31 @@ export default function AliasDetail() {
         <div className="flex flex-col w-full gap-3">
           <h1 className="font-bold text-[#19191B] text-lg">Assets</h1>
 
-          <div className="flex flex-col w-full">
-            <TxItem
-              tokenImg={"/assets/eth-logo.png"}
-              chainImg={"/assets/eth-logo.png"}
-              title={"Ethereum"}
-              subtitle={"Ethereum"}
-              value={"0.0011"}
-              subValue={"$1.76"}
+          {isLoadingAssets ? (
+            <Spinner
+              size="md"
+              color="primary"
+              className="flex items-center justify-center w-full h-40"
             />
-
-            <TxItem
-              tokenImg={"/assets/usdc-logo.png"}
-              chainImg={"/assets/bsc-logo.png"}
-              title={"USDC"}
-              subtitle={"BSC"}
-              value={"0.007"}
-              subValue={"$7.00"}
-            />
-          </div>
+          ) : (
+            assets && (
+              <div className="flex flex-col w-full">
+                {assets.map((item, idx) => {
+                  return (
+                    <TxItem
+                      key={idx}
+                      tokenImg={item.logo}
+                      chainImg={"/assets/eth-logo.png"}
+                      title={item.name}
+                      subtitle={"Ethereum"}
+                      value={formatCurrency(item.amount, item.symbol)}
+                      subValue={formatCurrency(item.amountUSD, "USD")}
+                    />
+                  );
+                })}
+              </div>
+            )
+          )}
         </div>
 
         {/* Transactions */}
