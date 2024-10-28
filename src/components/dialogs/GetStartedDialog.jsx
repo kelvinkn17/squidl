@@ -17,6 +17,9 @@ import Nounsies from "../shared/Nounsies";
 import useSWR from "swr";
 import { useNavigate } from "react-router-dom";
 import { useWeb3 } from "../../providers/Web3Provider";
+import { useDebounce } from "@uidotdev/usehooks";
+import { ethers } from "ethers";
+import { sapphireTestnet } from "../../config";
 
 const confettiConfig = {
   angle: 90,
@@ -57,11 +60,52 @@ export default function GetStartedDialog() {
 
 function StepOne({ setStep }) {
   const [username, setUsername] = useState("");
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const debouncedUsername = useDebounce(username, 500);
+
+  const handleCheckUsername = async () => {
+    try {
+      if (!debouncedUsername) {
+        setIsUsernameAvailable(false);
+        return;
+      }
+
+      setIsCheckingUsername(true);
+
+      const { data } = await squidlAPI.get(`/stealth-address/aliases/check`, {
+        params: {
+          alias: debouncedUsername,
+        },
+      });
+
+      setIsUsernameAvailable(data)
+    } catch (error) {
+      console.error('Error checking username', error)
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log('debouncedUsername', debouncedUsername)
+
+    if (!debouncedUsername) {
+      setIsUsernameAvailable(false);
+      setIsCheckingUsername(false);
+      return;
+    } else {
+      handleCheckUsername()
+    }
+
+  }, [debouncedUsername])
+
   const [loading, setLoading] = useState(false);
 
   const { contract } = useWeb3();
 
   async function handleUpdate() {
+    console.log('handleUpdate')
     if (loading) return;
 
     if (!username) {
@@ -70,47 +114,76 @@ function StepOne({ setStep }) {
 
     setLoading(true);
 
-    let id;
-
     try {
-      id = toast.loading(
-        "Preparing meta address, please sign the transaction..."
-      );
-
-      const authSigner = localStorage.getItem("auth_signer");
-      const tx = await contract.register(JSON.parse(authSigner));
-
       toast.loading(
-        "Cooking your meta address and ENS username, please wait...",
+        "Preparing meta address, please sign the transaction...",
         {
-          id,
+          id: 'loading-meta-address',
         }
       );
 
-      const hash = await tx.wait();
+      const authSigner = JSON.parse(localStorage.getItem("auth_signer"));
+      if (!authSigner) throw new Error("Auth signer not found in localStorage");
 
-      console.log({ hash, tx });
+      // Sapphire Provider and Paymaster Wallet
+      const sapphireProvider = new ethers.JsonRpcProvider(sapphireTestnet.rpcUrls[0]);
+      const paymasterPK = import.meta.env.VITE_PAYMASTER_PK;
+      const paymasterWallet = new ethers.Wallet(paymasterPK, sapphireProvider);
+
+      const contract = new ethers.Contract(
+        sapphireTestnet.stealthSignerContract.address,
+        sapphireTestnet.stealthSignerContract.abi.abi,
+        paymasterWallet
+      )
+      toast.loading(
+        "Cooking your meta address and ENS username, please wait...",
+        {
+          id: 'loading-meta-address',
+        }
+      );
+      
+      // Populate transaction
+      const tx = await contract.register(authSigner);
+      console.log("Populated Transaction:", tx);
+
+      await tx.wait();
+
+      console.log("Transaction Confirmed:", tx);
+
+      // Get the user meta address
+      const metaAddress = await contract.getMetaAddress.staticCall(authSigner, 1);
+      const metaAddressInfo = {
+        metaAddress: metaAddress[0],
+        spendPublicKey: metaAddress[1],
+        viewingPublicKey: metaAddress[2],
+      }
+
+      console.log("Meta Address Info:", metaAddressInfo);
 
       await squidlAPI.post("/user/update-user", {
         username: username.toLowerCase(),
+        metaAddressInfo: metaAddressInfo
       });
 
       toast.success("Meta address and ENS username successfully created");
 
       setStep("two");
     } catch (e) {
-      console.error(e);
-      toast.error("Error creating your username");
+      console.error('Error creating username', e)
+      toast.error("Error creating your username", {
+        id: 'loading-meta-address',
+      })
     } finally {
-      toast.dismiss(id);
+      toast.dismiss('loading-meta-address');
       setLoading(false);
     }
   }
+
   return (
     <>
       <p className="text-2xl font-semibold">Let's get started!</p>
       <p className="text-lg mt-4">
-        Pick a cool username for your Squidl. This will be your payment link and
+        Pick a cool username for your SQUIDL. This will be your payment link and
         ENS, so anyone can easily send you money
       </p>
       <div className="mt-8 rounded-xl size-24 aspect-square bg-neutral-100 overflow-hidden mx-auto">
@@ -123,6 +196,7 @@ function StepOne({ setStep }) {
       <div className="mt-8 w-full flex items-center relative">
         <Input
           className="w-full"
+          type="text"
           classNames={{
             mainWrapper: "rounded-2xl",
             inputWrapper: "h-16",
@@ -137,12 +211,12 @@ function StepOne({ setStep }) {
           placeholder="your-username"
           variant="bordered"
         />
-        <p className="absolute right-4 text-neutral-400">squidl.me</p>
+        <p className="absolute right-4 text-neutral-400">.squidl.me</p>
       </div>
       <Button
         onClick={handleUpdate}
-        loading={loading}
-        isDisabled={loading}
+        loading={loading || isCheckingUsername}
+        isDisabled={loading || !isUsernameAvailable || isCheckingUsername}
         className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-purply-600"
       >
         Continue

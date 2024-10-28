@@ -9,6 +9,15 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { CONTRACT_ADDRESS } from "../config";
 import ContractABI from "../abi/StealthSigner.json";
 
+/**
+ * @typedef {Object} Web3ContextType
+ * @property {boolean} isLoaded - Indicates if the provider is loaded.
+ * @property {ethers.providers.Provider | null} provider - The Ethers provider.
+ * @property {ethers.Signer | null} signer - The Ethers signer.
+ * @property {ethers.Contract | null} contract - The Ethers contract instance.
+ */
+
+/** @type {React.Context<Web3ContextType>} */
 const Web3Context = createContext({
   isLoaded: false,
   provider: null,
@@ -24,7 +33,7 @@ export default function Web3Provider({ children }) {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [contract, setContract] = useState(null);
-  const [isLoaded, setLoaded] = useState(null);
+  const [isLoaded, setLoaded] = useState(false);
   const isInitiating = useRef(false);
 
   async function init() {
@@ -40,6 +49,7 @@ export default function Web3Provider({ children }) {
         ContractABI.abi,
         wrappedSigner
       );
+      
       setProvider(wrappedProvider);
       setSigner(wrappedSigner);
       setContract(contract);

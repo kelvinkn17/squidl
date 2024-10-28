@@ -59,41 +59,26 @@ export default function AliasDetail() {
     return data;
   });
 
-  const [aliasAddress, setAliasAddress] = useState(null);
-  const [metaAdd, setMetaAdd] = useState(null);
   const [isLoadingAlias, setLoading] = useState(false);
   const [assets, setAssets] = useState(null);
   const [isLoadingAssets, setLoadingAssets] = useState(false);
 
-  async function generateStealthAddress() {
-    setLoading(true);
+  const [isErrorAliasData, setErrorAliasData] = useState(false);
+  const { data: aliasDetailData, isLoading: isLoadingAliasData, mutate: mutateAliasData } = useSWR(`/stealth-address/aliases/${alias}/detail`, async (url) => {
     try {
-      const auth = localStorage.getItem("auth_signer");
-      if (!auth) {
-        return toast.error("Signer not available");
-      }
-      const [metaAddress] = await contract.getMetaAddress.staticCall(
-        JSON.parse(auth),
-        0
-      );
-      const [address1, ePub1, tag1] =
-        await contract.generateStealthAddress.staticCall(metaAddress, 0);
-
-      console.log(address1);
-      setAliasAddress(address1);
-    } catch (e) {
-      console.log(e);
+      setLoading(true);
+      const { data } = await squidlAPI.get(url);
+      console.log('aliasData', data)
+      setErrorAliasData(false);
+      return data;
+    } catch (error) {
+      console.error('Error fetching alias data', error)
+      setErrorAliasData(true);
+      return null;
     } finally {
       setLoading(false);
     }
-  }
-
-  async function getMetaadd(params) {
-    const authSigner = localStorage.getItem("auth_signer");
-    const [metaAddress, spendPub, viewingPub] =
-      await contract.getMetaAddress.staticCall(JSON.parse(authSigner), 0);
-    setMetaAdd(metaAddress);
-  }
+  });
 
   async function getAssets() {
     setLoadingAssets(true);
@@ -109,8 +94,7 @@ export default function AliasDetail() {
   }
 
   useEffect(() => {
-    generateStealthAddress();
-    getMetaadd();
+    mutateAliasData();
     getAssets();
   }, []);
 
@@ -197,7 +181,7 @@ export default function AliasDetail() {
 
             <button
               onClick={async () => {
-                onCopy(`http://localhost:5173/payment/${metaAdd}`);
+                onCopy(`http://localhost:5173/payment/${alias}`);
               }}
             >
               <Icons.copy
@@ -256,12 +240,12 @@ export default function AliasDetail() {
         }}
         className="relative bg-white rounded-[30.5px] p-2 flex items-center justify-between w-full"
       >
-        {isLoadingAlias ? (
+        {(isLoadingAlias) ? (
           <Skeleton className="flex rounded-full w-32 h-5 ml-4" />
         ) : (
-          <Tooltip content={<p>{aliasAddress}</p>}>
+          <Tooltip content={<p>{aliasDetailData?.stealthAddress?.address}</p>}>
             <p className="font-medium text-[#19191B] py-2 px-3">{`${shortenAddress(
-              aliasAddress
+              aliasDetailData?.stealthAddress?.address
             )}`}</p>
           </Tooltip>
         )}
@@ -269,7 +253,7 @@ export default function AliasDetail() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              generateStealthAddress();
+              mutateAliasData();
             }}
             className="bg-[#E9ECFC] rounded-full p-3"
           >
@@ -278,7 +262,7 @@ export default function AliasDetail() {
 
           <button
             onClick={() => {
-              onCopy(aliasAddress);
+              onCopy(aliasDetailData?.stealthAddress?.address);
             }}
             className="bg-[#E9ECFC] rounded-full p-3"
           >
