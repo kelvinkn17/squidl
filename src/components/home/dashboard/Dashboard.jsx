@@ -18,6 +18,7 @@ import { Icons } from "../../shared/Icons.jsx";
 import { sleep } from "../../../utils/process.js";
 import { useNavigate } from "react-router-dom";
 import { mainBalance, privateBalance } from "../../../store/balance-store.js";
+import Experimental from "./Experimental.jsx";
 
 function generateRandomEthAddress() {
   const randomBytes = new Uint8Array(20);
@@ -74,6 +75,9 @@ export default function Dashboard() {
       >
         <div className="flex flex-col items-center py-20 w-full">
           <div className="w-full max-w-md flex flex-col items-center gap-4 pt-12 pb-20">
+            {/* TODO: Remove this later */}
+            <Experimental />
+            
             <ReceiveCard
               setOpenQr={setOpenQr}
               user={user}
