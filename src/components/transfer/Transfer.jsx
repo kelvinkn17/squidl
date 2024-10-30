@@ -8,6 +8,7 @@ import { squidlAPI } from "../../api/squidl.js";
 import ChainSelectionDialog from "../dialogs/ChainSelectionDialog.jsx";
 import { cnm } from "../../utils/style.js";
 import SuccessDialog from "../dialogs/SuccessDialog.jsx";
+import { useUser } from "../../providers/UserProvider.jsx";
 
 const publicTokens = [
   {
@@ -44,6 +45,7 @@ const privateTokens = [
 
 export function Transfer() {
   const [search] = useSearchParams();
+  const { assets } = useUser();
   const type = search.get("type");
   const isPrivate = type === "private";
 
@@ -56,56 +58,55 @@ export function Transfer() {
   const chains =
     type === "private"
       ? [
-          {
-            id: 1,
-            token: "eth",
-            chain: "eth",
-            tokenName: "Ethereum",
-            chainName: "BSC",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/bsc-logo.png",
-          },
-          {
-            id: 2,
-            token: "eth",
-            chain: "eth",
-            tokenName: "USDC",
-            chainName: "Ethereum",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/ethc-logo.png",
-          },
-          {
-            id: 3,
-            token: "eth",
-            chain: "eth",
-            tokenName: "USDC",
-            chainName: "Oasis",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-        ]
+        {
+          id: 1,
+          token: "eth",
+          chain: "eth",
+          tokenName: "Ethereum",
+          chainName: "BSC",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/bsc-logo.png",
+        },
+        {
+          id: 2,
+          token: "eth",
+          chain: "eth",
+          tokenName: "USDC",
+          chainName: "Ethereum",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/ethc-logo.png",
+        },
+        {
+          id: 3,
+          token: "eth",
+          chain: "eth",
+          tokenName: "USDC",
+          chainName: "Oasis",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/oasis-logo.png",
+        },
+      ]
       : [
-          {
-            id: 4,
-            token: "eth",
-            chain: "eth",
-            tokenName: "ETH",
-            chainName: "Ethereum",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-          {
-            id: 1,
-            token: "eth",
-            chain: "eth",
-            tokenName: "ETH",
-            chainName: "Oasis",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-        ];
+        {
+          id: 4,
+          token: "eth",
+          chain: "eth",
+          tokenName: "ETH",
+          chainName: "Ethereum",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/oasis-logo.png",
+        },
+        {
+          id: 1,
+          token: "eth",
+          chain: "eth",
+          tokenName: "ETH",
+          chainName: "Oasis",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/oasis-logo.png",
+        },
+      ];
 
-  console.log({ chains });
 
   const [amount, setAmount] = useState();
   const [openTokenDialog, setOpenTokenDialog] = useState(false);
@@ -119,24 +120,24 @@ export function Transfer() {
   const [balances, setBalances] = useState(
     type === "private"
       ? [
-          {
-            tokenName: "USDC",
-            chainName: "Oasis",
-            balance: 3000,
-          },
-        ]
+        {
+          tokenName: "USDC",
+          chainName: "Oasis",
+          balance: 3000,
+        },
+      ]
       : [
-          {
-            tokenName: "USDC",
-            chainName: "BSC",
-            balance: 1000,
-          },
-          {
-            tokenName: "USDC",
-            chainName: "Ethereum",
-            balance: 2000,
-          },
-        ]
+        {
+          tokenName: "USDC",
+          chainName: "BSC",
+          balance: 1000,
+        },
+        {
+          tokenName: "USDC",
+          chainName: "Ethereum",
+          balance: 2000,
+        },
+      ]
   );
 
   const navigate = useNavigate();
@@ -148,6 +149,9 @@ export function Transfer() {
     });
     navigator.clipboard.writeText(text);
   };
+
+  const [error, setError] = useState("");
+  const { userSOLBalance = 1 } = useUser();
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -229,7 +233,7 @@ export function Transfer() {
         ..._prev,
         balance:
           _prev.tokenName === selectedToken.tokenName &&
-          _prev.chainName === selectedToken.chainName
+            _prev.chainName === selectedToken.chainName
             ? _prev.balance - amount
             : _prev.balance,
       }))

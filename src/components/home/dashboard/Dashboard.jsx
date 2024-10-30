@@ -19,6 +19,7 @@ import { sleep } from "../../../utils/process.js";
 import { useNavigate } from "react-router-dom";
 import { mainBalance, privateBalance } from "../../../store/balance-store.js";
 import Experimental from "./Experimental.jsx";
+import { useUser } from "../../../providers/UserProvider.jsx";
 
 function generateRandomEthAddress() {
   const randomBytes = new Uint8Array(20);
@@ -291,8 +292,15 @@ function TotalBalance() {
 
 function BalanceMode({ mode }) {
   const navigate = useNavigate();
-  const totalMainBalance = useAtomValue(mainBalance);
-  const totalPrivateBalance = useAtomValue(privateBalance);
+  const { userData } = useUser();
+
+  const { data: totalBalanceUSD, isLoading: totalBalanceLoading } = useSWR(
+    userData ? `/user/wallet-assets/${userData.username}/total-balance` : null,
+    async (url) => {
+      const { data } = await squidlAPI.get(url);
+      return data;
+    }
+  );
 
   function onNavigate() {
     if (mode === "available") {
@@ -339,17 +347,18 @@ function BalanceMode({ mode }) {
             </motion.div>
           )}
         </AnimatePresence>
-        <p
-          className={cnm(
-            "text-4xl font-semibold absolute transition-all",
-            "left-6 top-2"
-          )}
-        >
-          $
-          {mode === "private"
-            ? totalPrivateBalance.toFixed(2).toLocaleString("en-US")
-            : totalMainBalance.toFixed(2).toLocaleString("en-US")}
-        </p>
+        {totalBalanceLoading ? (
+          <Skeleton className="w-20 h-10 rounded-lg absolute top-2 left-6" />
+        ) : (
+          <p
+            className={cnm(
+              "text-4xl font-semibold absolute transition-all",
+              "left-6 top-2"
+            )}
+          >
+            ${totalBalanceUSD?.toLocaleString("en-US")}
+          </p>
+        )}
       </div>
       <div className="mt-4 w-full flex items-center gap-2 px-6 py-6 text-lg">
         <Button

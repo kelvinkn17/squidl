@@ -1,5 +1,5 @@
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { squidlAPI, squidlPublicAPI } from "../api/squidl";
 import { isGetStartedDialogAtom } from "../store/dialog-store";
 import { useAtom } from "jotai";
@@ -12,6 +12,10 @@ import { useSession } from "../hooks/use-session";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import useSWR from "swr";
+
+const AuthContext = createContext({
+  userData: {},
+});
 
 export default function AuthProvider({ children }) {
   const { isLoaded, provider, signer } = useWeb3();
@@ -30,7 +34,7 @@ export default function AuthProvider({ children }) {
     }
   );
 
-  console.log({ primaryWallet, user });
+  // console.log({ primaryWallet, user });
 
   const login = async (user) => {
     if (isSigningIn || !user || !primaryWallet) return;
@@ -110,5 +114,17 @@ export default function AuthProvider({ children }) {
     }
   }, [userData]);
 
-  return children;
+  return (
+    <AuthContext.Provider
+      value={{
+        userData: userData || {},
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => {
+  return useContext(AuthContext);
 }
