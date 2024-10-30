@@ -51,7 +51,7 @@ export default function ChainSelectionDialog({
               <Chain
                 key={idx}
                 tokenImg={chain.tokenLogoUrl}
-                chainImg={chain.chainLogoUrl}
+                chainImg={chain.iconUrls[0]}
                 title={chain.tokenName}
                 isPrivate={isPrivate}
                 subtitle={chain.chainName}

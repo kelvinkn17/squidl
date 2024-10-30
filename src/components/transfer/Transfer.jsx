@@ -9,6 +9,10 @@ import ChainSelectionDialog from "../dialogs/ChainSelectionDialog.jsx";
 import { cnm } from "../../utils/style.js";
 import SuccessDialog from "../dialogs/SuccessDialog.jsx";
 import { useUser } from "../../providers/UserProvider.jsx";
+import { aggregateAssets } from "../../utils/assets-utils.js";
+import { ethers, JsonRpcProvider } from "ethers";
+import { useWeb3 } from "../../providers/Web3Provider.jsx";
+import { CHAINS, TESTNET_CHAINS } from "../../config.js";
 
 const publicTokens = [
   {
@@ -45,7 +49,6 @@ const privateTokens = [
 
 export function Transfer() {
   const [search] = useSearchParams();
-  const { assets } = useUser();
   const type = search.get("type");
   const isPrivate = type === "private";
 
@@ -58,57 +61,59 @@ export function Transfer() {
   const chains =
     type === "private"
       ? [
-        {
-          id: 1,
-          token: "eth",
-          chain: "eth",
-          tokenName: "Ethereum",
-          chainName: "BSC",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/bsc-logo.png",
-        },
-        {
-          id: 2,
-          token: "eth",
-          chain: "eth",
-          tokenName: "USDC",
-          chainName: "Ethereum",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/ethc-logo.png",
-        },
-        {
-          id: 3,
-          token: "eth",
-          chain: "eth",
-          tokenName: "USDC",
-          chainName: "Oasis",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-      ]
+          {
+            id: 1,
+            token: "eth",
+            chain: "eth",
+            tokenName: "Ethereum",
+            chainName: "BSC",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/bsc-logo.png",
+          },
+          {
+            id: 2,
+            token: "eth",
+            chain: "eth",
+            tokenName: "USDC",
+            chainName: "Ethereum",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/ethc-logo.png",
+          },
+          {
+            id: 3,
+            token: "eth",
+            chain: "eth",
+            tokenName: "USDC",
+            chainName: "Oasis",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/oasis-logo.png",
+          },
+        ]
       : [
-        {
-          id: 4,
-          token: "eth",
-          chain: "eth",
-          tokenName: "ETH",
-          chainName: "Ethereum",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-        {
-          id: 1,
-          token: "eth",
-          chain: "eth",
-          tokenName: "ETH",
-          chainName: "Oasis",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-      ];
+          {
+            id: 4,
+            token: "eth",
+            chain: "eth",
+            tokenName: "ETH",
+            chainName: "Ethereum",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/oasis-logo.png",
+          },
+          {
+            id: 1,
+            token: "eth",
+            chain: "eth",
+            tokenName: "ETH",
+            chainName: "Oasis",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/oasis-logo.png",
+          },
+        ];
 
+  const { assets, isAssetsLoading } = useUser();
+  const { contract } = useWeb3();
 
-  const [amount, setAmount] = useState();
+  const [amount, setAmount] = useState("");
   const [openTokenDialog, setOpenTokenDialog] = useState(false);
   const [openChainDialog, setOpenChainDialog] = useState(false);
   const [selectedToken, setSelectedToken] = useState(null);
@@ -120,24 +125,24 @@ export function Transfer() {
   const [balances, setBalances] = useState(
     type === "private"
       ? [
-        {
-          tokenName: "USDC",
-          chainName: "Oasis",
-          balance: 3000,
-        },
-      ]
+          {
+            tokenName: "USDC",
+            chainName: "Oasis",
+            balance: 3000,
+          },
+        ]
       : [
-        {
-          tokenName: "USDC",
-          chainName: "BSC",
-          balance: 1000,
-        },
-        {
-          tokenName: "USDC",
-          chainName: "Ethereum",
-          balance: 2000,
-        },
-      ]
+          {
+            tokenName: "USDC",
+            chainName: "BSC",
+            balance: 1000,
+          },
+          {
+            tokenName: "USDC",
+            chainName: "Ethereum",
+            balance: 2000,
+          },
+        ]
   );
 
   const navigate = useNavigate();
@@ -208,38 +213,214 @@ export function Transfer() {
     }
   }, [selectedToken]);
 
-  const sendTx = async () => {
-    if (maxBalance <= 0) return;
-    toast.loading("Processing transaction...", {
-      id: "send",
-      position: "bottom-center",
-    });
+  async function handleTransfer() {
+    if (!selectedToken || !selectedChain) {
+      return toast.error("Please select token and chain");
+    }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    if (!amount || amount <= 0) {
+      return toast.error("Please enter a valid amount");
+    }
 
-    toast.success("Transaction completed successfully!", {
-      id: "send",
-      duration: 1000,
-      position: "bottom-center",
-    });
+    if (!destination) {
+      return toast.error("Please enter a destination address");
+    }
 
-    setOpenSuccess(true);
+    if (!assets) {
+      return toast.error("No assets available");
+    }
 
-    setDestination("");
-    setAmount(0);
-    setMaxBalance((prev) => prev - amount);
-    setBalances((prev) =>
-      prev.map((_prev) => ({
-        ..._prev,
-        balance:
-          _prev.tokenName === selectedToken.tokenName &&
-            _prev.chainName === selectedToken.chainName
-            ? _prev.balance - amount
-            : _prev.balance,
-      }))
-    );
-  };
+    try {
+      console.log("Initiating transfer...");
 
+      const metaAddress =
+        "st:eth:0x025c66a53b27a3dbe6e591c6ef58a022538922341a650231a30a04e65494333a7802fc0af3018b0cec9159541bb5efc76c583b6f330a9bb97486cf553e3f6c8dc717";
+
+      const aggregatedAssets = aggregateAssets(assets.stealthAddresses, {
+        isNative: true,
+        chainId: 11155111,
+        tokenAddress: "",
+      });
+
+      console.log("Assets from handle transfer:", aggregatedAssets);
+
+      const destinationAddress = destination;
+      const isNative = true;
+      const chainId = selectedChain.chainId;
+
+      // Mock token data for ERC20 tokens
+      const tokenAddress = "0x53844F9577C2334e541Aec7Df7174ECe5dF1fCf0";
+      const tokenDecimals = 18;
+
+      // Convert Ether amount to Wei for calculation
+      let etherAmount = amount * 10 ** 18;
+      if (etherAmount <= 0) {
+        throw new Error("Invalid withdrawal amount.");
+      }
+
+      // Sort assets by balance and prepare the withdrawal queue
+      const sortedAssets = aggregatedAssets.sort(
+        (a, b) => b.balance - a.balance
+      );
+
+      const withdrawQueue = sortedAssets.reduce((queue, asset) => {
+        if (etherAmount <= 0) return queue;
+
+        const withdrawAmount = Math.min(etherAmount, parseInt(asset.amount));
+        etherAmount -= withdrawAmount;
+
+        return [
+          ...queue,
+          {
+            address: asset.address,
+            ephemeralPub: asset.ephemeralPub,
+            amount: withdrawAmount,
+          },
+        ];
+      }, []);
+
+      if (etherAmount > 0) {
+        console.warn(
+          "Insufficient balance to fulfill the requested withdrawal amount."
+        );
+        throw new Error("Insufficient balance to complete withdrawal.");
+      }
+
+      console.log("Withdraw queue:", withdrawQueue);
+
+      const authSigner = JSON.parse(localStorage.getItem("auth_signer"));
+      if (!authSigner) {
+        return toast.error("Signer not available");
+      }
+
+      const network = CHAINS.testnet.find((chain) => chain.id === chainId);
+      console.log("Network:", network);
+
+      if (!network) {
+        throw new Error("Network not found");
+      }
+
+      const provider = new JsonRpcProvider(network.rpcUrl);
+      const transactions = [];
+
+      for (const queue of withdrawQueue) {
+        try {
+          console.log({
+            auth: authSigner,
+            metaAddress,
+            k: 51,
+            ephemeralPub: queue.ephemeralPub,
+          });
+
+          // Compute stealth key and stealth address
+          const [stealthKey, stealthAddress] =
+            await contract.computeStealthKey.staticCall(
+              authSigner,
+              metaAddress,
+              51,
+              queue.ephemeralPub
+            );
+
+          console.log("Stealth address:", { stealthAddress, stealthKey });
+
+          queue.stealthKey = stealthKey;
+
+          // Create a new signer using the stealth key (private key)
+          const stealthSigner = new ethers.Wallet(stealthKey, provider);
+          console.log("Stealth signer:", stealthSigner);
+
+          // Handle the native asset (ETH)
+          let txData;
+
+          if (isNative) {
+            // TODO: If the balance can't cover the gas fee, reduce the amount
+            console.log("INSIDE IS NATIVE");
+            // Minimal transaction data for ETH transfer
+            txData = {
+              from: stealthSigner.address,
+              to: destinationAddress,
+              value: queue.amount,
+              chainId: network.id,
+              nonce: await stealthSigner.getNonce(),
+              gasPrice: ethers.parseUnits("20", "gwei"),
+            };
+          } else {
+            // TODO: Handle ERC20 tokens
+            const tokenContract = new ethers.Contract(
+              tokenAddress,
+              ["function transfer(address to, uint256 amount) returns (bool)"],
+              stealthSigner
+            );
+            const tokenAmount = ethers.utils.parseUnits(
+              String(queue.amount),
+              tokenDecimals
+            );
+
+            txData = await tokenContract.populateTransaction.transfer(
+              destinationAddress,
+              tokenAmount
+            );
+            txData.chainId = network.id;
+            txData.nonce = await stealthSigner.getNonce();
+            txData.gasPrice = ethers.parseUnits("20", "gwei");
+          }
+
+          console.log("Transaction data:", txData);
+
+          // Estimate gas limit for the transaction
+          const gasEstimate = await provider.estimateGas(txData);
+          txData.gasLimit = gasEstimate;
+
+          // Sign the transaction using the stealthSigner
+          const signedTx = await stealthSigner.signTransaction(txData);
+          transactions.push(signedTx); // Collect the signed transaction
+        } catch (error) {
+          console.error("Error generating transaction:", error);
+          throw error;
+        }
+      }
+
+      // Send all signed transactions in a batch
+      toast.loading("Processing transaction", { id: "withdrawal" });
+
+      let txReceipts = []; // Define txReceipts outside the try-catch block
+
+      try {
+        // Send and confirm all transactions
+        txReceipts = await Promise.all(
+          transactions.map(async (signedTx) => {
+            // Send the raw transaction
+            const txResponse = await provider.send(
+              "eth_sendRawTransaction",
+              [signedTx] // Send the signed transaction
+            );
+
+            // Wait for transaction to be mined (confirmed)
+            const receipt = await provider.waitForTransaction(txResponse);
+
+            console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
+            return receipt; // Return receipt for each transaction
+          })
+        );
+
+        console.log("All transactions confirmed:", txReceipts);
+      } catch (error) {
+        console.error("Error sending or confirming transactions:", error);
+      }
+
+      // txReceipts is now accessible outside the try-catch block
+      console.log("Confirmed transactions:", txReceipts);
+
+      toast.success("Withdrawal completed successfully", { id: "withdrawal" });
+    } catch (error) {
+      console.error("Error during withdrawal:", error);
+      toast.error(`Error during withdrawal: ${error.message}`, {
+        id: "withdrawal",
+      });
+    }
+  }
+
+  console.log({ selectedToken, selectedChain });
   return (
     <>
       <SuccessDialog
@@ -259,6 +440,7 @@ export function Transfer() {
       >
         <TokenSelectionDialog
           open={openTokenDialog}
+          assets={assets}
           setOpen={setOpenTokenDialog}
           isPrivacy={type ? (type === "privacy" ? true : false) : false}
           tokens={tokens}
@@ -272,7 +454,7 @@ export function Transfer() {
           open={openChainDialog}
           setOpen={setOpenChainDialog}
           isPrivacy={type ? (type === "privacy" ? true : false) : false}
-          chains={chains}
+          chains={TESTNET_CHAINS}
           selectedChain={selectedChain}
           setSelectedChain={setSelectedChain}
         />
@@ -294,9 +476,10 @@ export function Transfer() {
           <div className="relative flex border-[2px] gap-4 border-[#E4E4E4] rounded-[16px]">
             {/* Token */}
 
-            <div
+            <button
               onClick={() => setOpenTokenDialog(true)}
-              className="relative cursor-pointer flex flex-col md:flex-row items-start md:items-center justify-between gap-2 pl-4 py-5 w-full"
+              disabled={isAssetsLoading}
+              className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-2 pl-4 py-5 w-full"
             >
               <h1 className="absolute left-0 -top-7 text-sm text-[#A1A1A3]">
                 Token
@@ -318,38 +501,40 @@ export function Transfer() {
                   ) : (
                     <div className="relative size-8">
                       <img
-                        src={selectedToken.tokenLogoUrl}
+                        src={selectedToken.nativeToken.logo}
                         alt="ic"
                         className="object-contain w-full h-full"
                       />
                       <img
-                        src={selectedToken.chainLogoUrl}
+                        src={selectedToken.chainLogo}
                         alt="ic"
                         className="absolute top-0 -right-2 object-contain size-4"
                       />
                     </div>
                   )}
-                  <p
+                  <div
                     className={cnm(
                       "font-medium",
                       selectedToken ? "text-neutral-600" : "text-neutral-300"
                     )}
                   >
                     {selectedToken ? (
-                      <div>
-                        <p>{selectedToken.tokenName}</p>
-                        <p className="text-xs text-neutral-400">
+                      <div className="flex flex-col items-start text-start">
+                        <p>{selectedToken.nativeToken.name}</p>
+                        <p className="text-[10px] text-neutral-400">
                           {selectedToken.chainName}
                         </p>
                       </div>
+                    ) : isAssetsLoading ? (
+                      "Loading..."
                     ) : (
                       "Select Token"
                     )}
-                  </p>
+                  </div>
                 </div>
                 <Icons.dropdown className="text-[#252525]" />
               </div>
-            </div>
+            </button>
 
             <div className="h-auto w-[4px] bg-[#E4E4E4] mx-auto" />
 
@@ -370,7 +555,7 @@ export function Transfer() {
                       <img
                         src={
                           selectedChain
-                            ? selectedChain.chainLogoUrl
+                            ? selectedChain.iconUrls[0]
                             : "/assets/coin-earth.png"
                         }
                         alt="ic"
@@ -417,13 +602,7 @@ export function Transfer() {
 
                 <button
                   onClick={() => {
-                    setAmount(
-                      balances.find(
-                        (balance) =>
-                          balance.chainName === selectedToken.chainName &&
-                          balance.tokenName === selectedToken.tokenName
-                      ).balance
-                    );
+                    setAmount(maxBalance);
                   }}
                   className=" text-[#563EEA] font-bold text-sm"
                 >
@@ -435,12 +614,10 @@ export function Transfer() {
         </div>
 
         {/* Destination */}
-
         <div className="flex flex-col gap-2 w-full mt-3">
           <h1 className="text-sm text-[#A1A1A3]">Destination Address</h1>
-          {type === "private" ? (
+          {type === "main" ? (
             <div className="flex flex-col gap-2">
-              {/* if Oasis not destination */}
               <input
                 className="h-16 w-full rounded-[16px] border-[2px] border-[#E4E4E4] px-6 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={destination}
@@ -454,7 +631,7 @@ export function Transfer() {
           ) : null}
 
           {/* if Oasis is destination */}
-          {!isPrivate && (
+          {isPrivate && (
             <div className="flex flex-col bg-[#2127FF] p-0.5 rounded-[16px]">
               <div className="flex items-center justify-between gap-4 bg-[#EEEEFF] px-4 py-5 rounded-[14px]">
                 <p className="font-medium text-[#161618]">
@@ -478,9 +655,7 @@ export function Transfer() {
         </div>
 
         <Button
-          onClick={() => {
-            sendTx();
-          }}
+          onClick={handleTransfer}
           className="h-16 mt-[10vh] md:mt-[15vh] bg-[#563EEA] w-full rounded-[42px] font-bold text-white"
         >
           Transfer

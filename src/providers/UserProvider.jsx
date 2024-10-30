@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useSession } from "../hooks/use-session";
 import { squidlAPI } from "../api/squidl";
-import useSWR from "swr";
 import { useAuth } from "./AuthProvider";
 import toast from "react-hot-toast";
 import { useLocalStorage } from "@uidotdev/usehooks";
@@ -9,33 +8,38 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 const UserContext = createContext({
   assets: {},
   userData: {},
+  isAssetsLoading: false,
 });
 
 export default function UserProvider({ children }) {
   const { isSignedIn } = useSession();
   const { userData } = useAuth();
   const [assets, setAssets] = useLocalStorage("user-assets", null);
+  const [isAssetsLoading, setAssetsLoading] = useState(false);
 
   const handleFetchAssets = async () => {
+    if (isAssetsLoading) return;
+    setAssetsLoading(true);
     try {
       console.log(`Fetching assets for ${userData.username}.squidl.eth`, {
         userData,
       });
 
       const res = await squidlAPI.get(
-        `/user/wallet-assets/${userData.username}.squidl.eth/assets`
+        `/user/wallet-assets/${userData.username}/all-assets`
       );
 
-      console.log("User assets", res.data);
       setAssets(res.data);
     } catch (error) {
       console.error("Error fetching user assets", error);
       toast.error("Error fetching user assets");
+    } finally {
+      setAssetsLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log("assets", assets);
+    console.log("assets from user provider", assets);
   }, [assets]);
 
   useEffect(() => {
@@ -58,6 +62,7 @@ export default function UserProvider({ children }) {
       value={{
         assets: assets,
         userData: userData,
+        isAssetsLoading,
       }}
     >
       {children}

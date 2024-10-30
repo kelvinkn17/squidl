@@ -1,5 +1,6 @@
 import { Skeleton, Spinner } from "@nextui-org/react";
 import axios from "axios";
+import { squidlAPI } from "../../../api/squidl";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -66,7 +67,7 @@ export default function BalanceChart() {
   const { data: chartData, isLoading } = useSWR(
     "/stealth-address/chart/0x278A2d5B5C8696882d1D2002cE107efc74704ECf?chainIds=1,137",
     async (url) => {
-      const { data } = await axios.get(`https://api.squidl.me` + url);
+      const { data } = await squidlAPI.get(url);
       const chartData = data.chart.map((chart) => ({
         date: dayjs.unix(chart.timestamp).format("DD/MM/YYYY"),
         usd: chart.value_usd,

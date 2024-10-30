@@ -9,29 +9,15 @@ export default function TokenSelectionDialog({
   open,
   setOpen,
   tokens,
+  assets,
   selectedToken,
   setSelectedToken,
-  isPrivate,
-  onSelectToken,
-  balances,
   setAmount,
 }) {
-  const { assets } = useUser();
-  console.log({ balances, tokens });
-
-  if (!assets) {
-    return (
-      <div>
-        <h1>Loading...</h1>
-      </div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ height: 0 }}
       animate={{ height: open ? "100%" : 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="absolute z-50 bottom-0 left-0 w-full bg-[#F9F9FA] overflow-hidden rounded-[32px] flex flex-col items-center justify-start"
     >
       <div className="flex flex-col items-center justify-center w-full bg-[#F9F9FA] rounded-[32px] p-6">
@@ -131,8 +117,7 @@ export default function TokenSelectionDialog({
                     subtitle={token.chainName}
                     value={formatCurrency(
                       parseFloat(token.balance.toFixed(5)),
-                      token.nativeToken.symbol,
-                      "de"
+                      token.nativeToken.symbol
                     )}
                     subValue={formatCurrency(
                       token.priceUSD,

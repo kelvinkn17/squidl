@@ -11,15 +11,13 @@ import { Button } from "@nextui-org/react";
 import { useAtom } from "jotai";
 import SquidLogo from "../../assets/squidl-logo.svg?react";
 import { isCreateLinkDialogAtom } from "../../store/dialog-store.js";
+import { useUser } from "../../providers/UserProvider.jsx";
 
 export default function PaymentLinks() {
   const navigate = useNavigate();
   const [, setOpen] = useAtom(isCreateLinkDialogAtom);
 
-  const { data: user } = useSWR("/auth/me", async (url) => {
-    const { data } = await squidlAPI.get(url);
-    return data;
-  });
+  const { userData: user } = useUser();
 
   const { data: aliases } = useSWR("/stealth-address/aliases", async (url) => {
     const { data } = await squidlAPI.get(url);
@@ -40,7 +38,9 @@ export default function PaymentLinks() {
         {aliases && aliases.length > 0 ? (
           aliases.map((alias, idx) => {
             const bgImage = AVAILABLE_CARDS_BG[idx % AVAILABLE_CARDS_BG.length];
-            const userAlias = alias.alias ? alias.alias : user?.username;
+            const userAlias = alias.alias
+              ? `${alias.alias}.${user?.username}`
+              : user?.username;
             const colorScheme = CARDS_SCHEME[idx % CARDS_SCHEME.length];
             return (
               <motion.div
