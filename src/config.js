@@ -159,7 +159,19 @@ export const CHAINS = {
       blockExplorerUrl: "https://bscscan.com/",
       imageUrl:
         "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/bsc.svg",
-    }
+    },
+    {
+      id: 23294,
+      isTestnet: false,
+      name: "Oasis Sapphire Mainnet",
+      chainlistUrl: "https://chainlist.org/chain/23294",
+      rpcUrl: "https://sapphire.oasis.io",
+      nativeToken: "ROSE",
+      blockExplorerUrl: "https://explorer.oasis.io/mainnet/sapphire",
+      imageUrl:
+        "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/oasis.svg",
+      compatibility: [137],
+    },
   ],
   testnet: [
     {
