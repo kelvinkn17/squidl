@@ -9,7 +9,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { isBackAtom } from "../../store/payment-card-store.js";
 import { useUserWallets } from "@dynamic-labs/sdk-react-core";
@@ -25,19 +25,17 @@ import SquidLogo from "../../assets/squidl-logo.svg?react";
 import { shortenAddress } from "../../utils/string.js";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { squidlAPI } from "../../api/squidl.js";
+import AssetItem from "./AssetItem.jsx";
+import { format } from "date-fns";
 
 export default function AliasDetail() {
   const navigate = useNavigate();
   const setBack = useSetAtom(isBackAtom);
   const userWallets = useUserWallets();
-  const { fullAlias, aliasId } = useLoaderData();
+  const { fullAlias } = useLoaderData();
   const { alias, parent } = useParams();
   const [searchParams] = useSearchParams();
   const scheme = searchParams.get("scheme");
-
-  const { contract } = useWeb3();
-
-  console.log(fullAlias);
 
   const layoutId = `payment-card-${alias}-${parent}`;
 
@@ -54,38 +52,47 @@ export default function AliasDetail() {
     window.scrollTo(0, 0);
   }, []);
 
-  const { data: user, isLoading } = useSWR("/auth/me", async (url) => {
+  const [assets, setAssets] = useState(null);
+  const [totalBalanceUSD, setTotalBalanceUSD] = useState(0);
+  const [isLoadingAssets, setLoadingAssets] = useState(false);
+
+  const {
+    data: aliasDetailData,
+    isLoading: isLoadingAlias,
+    mutate: mutateAliasData,
+  } = useSWR(`/stealth-address/aliases/${alias}/detail`, async (url) => {
     const { data } = await squidlAPI.get(url);
+    console.log("aliasData", data);
     return data;
   });
 
-  const [isLoadingAlias, setLoading] = useState(false);
-  const [assets, setAssets] = useState(null);
-  const [isLoadingAssets, setLoadingAssets] = useState(false);
-
-  const [isErrorAliasData, setErrorAliasData] = useState(false);
-  const { data: aliasDetailData, isLoading: isLoadingAliasData, mutate: mutateAliasData } = useSWR(`/stealth-address/aliases/${alias}/detail`, async (url) => {
-    try {
-      setLoading(true);
+  const {
+    data: transactionsData,
+    isLoading: isLoadingTransactionsData,
+    mutate: mutateTransactionsData,
+  } = useSWR(
+    `/user/wallet-assets/${fullAlias
+      .split(".")
+      .slice(1)
+      .join(".")}/aggregated-transactions`,
+    async (url) => {
       const { data } = await squidlAPI.get(url);
-      console.log('aliasData', data)
-      setErrorAliasData(false);
       return data;
-    } catch (error) {
-      console.error('Error fetching alias data', error)
-      setErrorAliasData(true);
-      return null;
-    } finally {
-      setLoading(false);
     }
-  });
+  );
 
   async function getAssets() {
     setLoadingAssets(true);
     try {
-      const res = await squidlAPI.get(`/user/wallet-assets/${aliasId}`);
-
-      setAssets(res.data.data.tokenAssets);
+      const { data } = await squidlAPI.get(
+        `/user/wallet-assets/${fullAlias}/assets`
+      );
+      console.log({ assets: data });
+      setAssets([
+        ...data.aggregatedBalances.native,
+        ...data.aggregatedBalances.erc20,
+      ]);
+      setTotalBalanceUSD(data.totalBalanceUSD);
     } catch (e) {
       console.log(e);
     } finally {
@@ -93,10 +100,27 @@ export default function AliasDetail() {
     }
   }
 
+  const groupedTransactions = useMemo(() => {
+    return transactionsData?.reduce((acc, tx) => {
+      const dateKey = format(new Date(tx.createdAt), "MM/dd/yyyy");
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(tx);
+      return acc;
+    }, {});
+  }, [transactionsData]);
+
   useEffect(() => {
     mutateAliasData();
     getAssets();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(mutateTransactionsData, 10000);
+
+    return () => clearInterval(interval);
+  }, [mutateTransactionsData]);
 
   return (
     <div
@@ -193,14 +217,18 @@ export default function AliasDetail() {
             </button>
           </div>
 
-          <h1
-            className={cnm(
-              "absolute top-1/2 -translate-y-1/2 text-white font-extrabold text-2xl",
-              scheme === "1" && "text-black"
-            )}
-          >
-            $0
-          </h1>
+          {isLoadingAssets ? (
+            <Skeleton className="rounded-lg w-14 h-8 absolute top-1/2 -translate-y-1/2" />
+          ) : (
+            <h1
+              className={cnm(
+                "absolute top-1/2 -translate-y-1/2 text-white font-extrabold text-2xl",
+                scheme === "1" && "text-black"
+              )}
+            >
+              ${totalBalanceUSD}
+            </h1>
+          )}
 
           <div className="absolute left-5 bottom-6 flex items-center justify-between">
             <h1
@@ -240,7 +268,7 @@ export default function AliasDetail() {
         }}
         className="relative bg-white rounded-[30.5px] p-2 flex items-center justify-between w-full"
       >
-        {(isLoadingAlias) ? (
+        {isLoadingAlias ? (
           <Skeleton className="flex rounded-full w-32 h-5 ml-4" />
         ) : (
           <Tooltip content={<p>{aliasDetailData?.stealthAddress?.address}</p>}>
@@ -307,52 +335,83 @@ export default function AliasDetail() {
               color="primary"
               className="flex items-center justify-center w-full h-40"
             />
+          ) : assets && assets.length > 0 ? (
+            <div className="flex flex-col w-full">
+              {assets.map((item, idx) => {
+                return (
+                  <AssetItem
+                    key={idx}
+                    logoImg={item.nativeToken.logo}
+                    balance={item.balance}
+                    chainName={item.chainName}
+                    chainLogo={item.chainLogo}
+                    priceUSD={item.priceUSD}
+                    tokenSymbol={item.nativeToken.symbol}
+                  />
+                );
+              })}
+            </div>
           ) : (
-            assets && (
-              <div className="flex flex-col w-full">
-                {assets.map((item, idx) => {
-                  return (
-                    <TxItem
-                      key={idx}
-                      tokenImg={item.logo}
-                      chainImg={"/assets/eth-logo.png"}
-                      title={item.name}
-                      subtitle={"Ethereum"}
-                      value={formatCurrency(item.amount, item.symbol)}
-                      subValue={formatCurrency(item.amountUSD, "USD")}
-                    />
-                  );
-                })}
-              </div>
-            )
+            <div className="w-full flex items-center justify-center h-48">
+              No assets found
+            </div>
           )}
         </div>
 
         {/* Transactions */}
         <div className="flex flex-col w-full gap-3">
           <h1 className="font-bold text-[#19191B] text-lg">Transactions</h1>
-          <p className="text-[#A1A1A3] font-medium text-sm mt-1">09/20/2024</p>
-          <div className="flex flex-col w-full">
-            <TxItem
-              tokenImg={"/assets/eth-logo.png"}
-              chainImg={"/assets/line-logo.png"}
-              title={"Receive"}
-              subtitle={`from ${shortenId(
-                "0x02919065a8Ef7A782Bb3D9f3DEFef2FA0a4d1f37"
-              )}`}
-              value={"0.0001"}
+          {isLoadingTransactionsData ? (
+            <Spinner
+              size="md"
+              color="primary"
+              className="flex items-center justify-center w-full h-40"
             />
+          ) : transactionsData && transactionsData.length > 0 ? (
+            <div className="flex flex-col w-full">
+              {Object.keys(groupedTransactions).map((date) => (
+                <div key={date} className="mb-4">
+                  <p className="text-[#A1A1A3] font-medium text-sm mt-1">
+                    {date}
+                  </p>
+                  {groupedTransactions[date].map((tx, idx) => {
+                    const isReceive = userWallets.includes(tx.toAddress);
+                    const isSent = userWallets.includes(tx.fromAddress);
 
-            <TxItem
-              tokenImg={"/assets/usdc-logo.png"}
-              chainImg={"/assets/eth-logo.png"}
-              title={"Receive"}
-              subtitle={`from ${shortenId(
-                "0x02919065a8Ef7A782Bb3D9f3DE5ef2FA0a4d1f47"
-              )}`}
-              value={"0.005"}
-            />
-          </div>
+                    return (
+                      <TxItem
+                        key={idx}
+                        tokenImg={
+                          tx.isNative
+                            ? tx.chain.nativeToken.logo
+                            : tx.token.logo
+                        }
+                        chainImg={
+                          tx.chain.imageUrl
+                            ? tx.chain.imageUrl
+                            : "/assets/line-logo.png"
+                        }
+                        title={
+                          isReceive ? "Receive" : isSent ? "Sent" : "Unknown"
+                        }
+                        subtitle={`from ${shortenId(tx.fromAddress)}`}
+                        value={formatCurrency(
+                          tx.amount,
+                          tx.isNative
+                            ? tx.chain.nativeToken.symbol
+                            : tx.token.symbol
+                        )}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full flex items-center justify-center h-48">
+              No transactions found
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

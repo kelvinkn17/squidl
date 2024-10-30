@@ -16,21 +16,15 @@ export default function PaymentLinks() {
   const navigate = useNavigate();
   const [, setOpen] = useAtom(isCreateLinkDialogAtom);
 
-  const { data: user, isLoading: isLoadingMe } = useSWR(
-    "/auth/me",
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      return data;
-    }
-  );
+  const { data: user } = useSWR("/auth/me", async (url) => {
+    const { data } = await squidlAPI.get(url);
+    return data;
+  });
 
-  const { data: aliases, isLoading } = useSWR(
-    "/stealth-address/aliases",
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      return data;
-    }
-  );
+  const { data: aliases } = useSWR("/stealth-address/aliases", async (url) => {
+    const { data } = await squidlAPI.get(url);
+    return data;
+  });
 
   return (
     <div
@@ -86,7 +80,7 @@ export default function PaymentLinks() {
                   )}
                 >
                   <p className="font-medium">{`${alias.alias}.${user?.username}.squidl.me`}</p>
-                  <p>${(293912).toLocaleString("en-US")}</p>
+                  <p>${alias.balanceUsd.toLocaleString("en-US")}</p>
                 </div>
 
                 <div className="absolute left-5 bottom-6 flex items-center justify-between">

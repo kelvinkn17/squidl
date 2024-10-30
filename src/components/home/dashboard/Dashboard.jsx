@@ -77,7 +77,7 @@ export default function Dashboard() {
           <div className="w-full max-w-md flex flex-col items-center gap-4 pt-12 pb-20">
             {/* TODO: Remove this later */}
             <Experimental />
-            
+
             <ReceiveCard
               setOpenQr={setOpenQr}
               user={user}
@@ -106,23 +106,26 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
     setLoading(false);
   }
 
-  const {
-    data: aliasAddress,
-    // isLoading: loadingAlias,
-    mutate,
-    isValidating,
-  } = useSWR(
-    user
-      ? `/stealth-address/address/new-address?fullAlias=${user?.username}.squidl.eth&isTestnet=true`
-      : null,
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      console.log({ data });
-      return data.address;
-    }
-  );
-
   const [mode, setMode] = useState("ens");
+
+  // const { data: aliasDetailData, mutate: mutateAliasData } = useSWR(
+  //   `/stealth-address/aliases/${user}/detail`,
+  //   async (url) => {
+  //     try {
+  //       setLoading(true);
+  //       const { data } = await squidlAPI.get(url);
+  //       console.log("aliasData", data);
+  //       return data;
+  //     } catch (error) {
+  //       console.error("Error fetching alias data", error);
+  //       return null;
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  // );
+
+  console.log({ user });
 
   const onCopy = (text) => {
     navigator.clipboard.writeText(
@@ -175,7 +178,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
         ) : (
           <>
             {mode === "address" ? (
-              loadingAlias || isValidating ? (
+              loadingAlias ? (
                 <Skeleton className="flex rounded-full w-20 h-8" />
               ) : (
                 <p>{shortenAddress(randomAddress)}</p>

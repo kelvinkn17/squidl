@@ -20,7 +20,7 @@ export const formatCurrency = (
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: currency,
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 0,
     }).format(amount);
   } else {
     const symbol = customSymbol || currency;
