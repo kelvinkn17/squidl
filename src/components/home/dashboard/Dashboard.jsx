@@ -280,7 +280,7 @@ function TotalBalance() {
         }}
         className="flex items-center justify-center text-white text-xs bg-oasis-blue"
       >
-        On Oasis Saphire, your funds stay private and untraceable
+        On Oasis Sapphire, your funds stay private and untraceable
       </motion.div>
     </div>
   );
