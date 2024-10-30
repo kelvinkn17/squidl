@@ -6,7 +6,7 @@ export default function Chains() {
       <p className="text-[#A1A1A3] text-sm mt-3">on these supported chain</p>
 
       <div className="flex gap-1 items-center justify-center">
-        {CHAINS.mainnet.map((chain) => {
+        {CHAINS.filter((chain) => chain.isTestnet === false).map((chain) => {
           return (
             <div key={chain.id} className="size-7 rounded-full bg-[#A1A1A3]">
               <img

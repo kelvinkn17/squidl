@@ -14,107 +14,29 @@ import { ethers, JsonRpcProvider } from "ethers";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { CHAINS, TESTNET_CHAINS } from "../../config.js";
 import { BN } from "bn.js";
+import { confirmTransaction, handleKeyDown } from "./helpers.js";
 
-const publicTokens = [
+// Make it so that the oasis sapphire (chainId: 23294) shows up on ChainSelectionDialog only when the exact token is selected
+const SUPPORTED_SAPPHIRE_BRIDGE = [
   {
-    id: 1,
-    token: "usdc",
-    chain: "eth",
-    tokenName: "USDC",
-    chainName: "Ethereum",
-    tokenLogoUrl: "/assets/usdc.png",
-    chainLogoUrl: "/assets/eth-logo.png",
-  },
-  {
-    id: 2,
-    token: "usdc",
-    chain: "eth",
-    tokenName: "USDC",
-    chainName: "BSC",
-    tokenLogoUrl: "/assets/usdc.png",
-    chainLogoUrl: "/assets/bsc-logo.png",
-  },
-];
-
-const privateTokens = [
-  {
-    id: 1,
-    token: "usdc",
-    chain: "eth",
-    tokenLogoUrl: "/assets/usdc.png",
-    chainLogoUrl: "/assets/oasis-logo.png",
-    tokenName: "USDC",
-    chainName: "Oasis",
-  },
-];
+    fromChainId: 56,
+    toChainId: 23294,
+    fromToken: "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
+    toToken: ""
+  }
+]
 
 export function Transfer() {
   const { userData } = useUser();
   const [search] = useSearchParams();
   const type = search.get("type");
-  const isPrivate = type === "private";
-
-  const tokens = type
-    ? type === "private"
-      ? privateTokens
-      : publicTokens
-    : publicTokens;
-
-  const chains =
-    type === "private"
-      ? [
-        {
-          id: 1,
-          token: "eth",
-          chain: "eth",
-          tokenName: "Ethereum",
-          chainName: "BSC",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/bsc-logo.png",
-        },
-        {
-          id: 2,
-          token: "eth",
-          chain: "eth",
-          tokenName: "USDC",
-          chainName: "Ethereum",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/ethc-logo.png",
-        },
-        {
-          id: 3,
-          token: "eth",
-          chain: "eth",
-          tokenName: "USDC",
-          chainName: "Oasis",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-      ]
-      : [
-        {
-          id: 4,
-          token: "eth",
-          chain: "eth",
-          tokenName: "ETH",
-          chainName: "Ethereum",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-        {
-          id: 1,
-          token: "eth",
-          chain: "eth",
-          tokenName: "ETH",
-          chainName: "Oasis",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-      ];
+  // const isPrivate = type === "private";
 
   const { assets, isAssetsLoading } = useUser();
   const { contract } = useWeb3();
+  const navigate = useNavigate();
 
+  // State variables
   const [amount, setAmount] = useState("");
   const [openTokenDialog, setOpenTokenDialog] = useState(false);
   const [openChainDialog, setOpenChainDialog] = useState(false);
@@ -123,42 +45,49 @@ export function Transfer() {
   const [openSuccess, setOpenSuccess] = useState(false);
   const [destination, setDestination] = useState("0x278A2d5B5C8696882d1D2002cE107efc74704ECf");
   const [maxBalance, setMaxBalance] = useState(0);
-
-  const [balances, setBalances] = useState(
-    type === "private"
-      ? [
-        {
-          tokenName: "USDC",
-          chainName: "Oasis",
-          balance: 3000,
-        },
-      ]
-      : [
-        {
-          tokenName: "USDC",
-          chainName: "BSC",
-          balance: 1000,
-        },
-        {
-          tokenName: "USDC",
-          chainName: "Ethereum",
-          balance: 2000,
-        },
-      ]
-  );
-
-  const navigate = useNavigate();
-  const onCopy = (text) => {
-    toast.success("Copied to clipboard", {
-      id: "copy",
-      duration: 1000,
-      position: "bottom-center",
-    });
-    navigator.clipboard.writeText(text);
-  };
-
   const [error, setError] = useState("");
-  const { userSOLBalance = 1 } = useUser();
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  // If the user is transferring to Oasis (23294), set isPrivate to true
+  useEffect(() => {
+    if (selectedChain && selectedChain.id === 23294) {
+      setIsPrivate(true);
+    } else {
+      setIsPrivate(false);
+    }
+  }, [selectedChain]);
+
+  // If selected token is changed, change the selected chain to the same chain as the token
+  useEffect(() => {
+    if (selectedToken) {
+      setSelectedChain(CHAINS.find((chain) => chain.id === selectedToken.chainId));
+    }
+  }, [selectedToken]);
+
+  // Function to dynamically filter chains based on selected token and bridge support
+  const getFilteredChains = () => {
+    if (!selectedToken) return [];
+
+    // Check if the selected token matches the Sapphire Bridge requirements
+    const isSapphireSupported = SUPPORTED_SAPPHIRE_BRIDGE.some(
+      (supportedChain) =>
+        supportedChain.fromChainId === selectedToken.chainId &&
+        selectedToken.address &&
+        supportedChain.fromToken.toLowerCase() === selectedToken.address.toLowerCase()
+    );
+
+    console.log("Is Sapphire Supported:", isSapphireSupported);
+
+    // If Sapphire is supported, return both chain with id 23294 and selectedToken's chainId
+    return isSapphireSupported
+      ? [
+        ...CHAINS.filter(
+          (chain) => chain.id === 23294 || chain.id === selectedToken.chainId
+        )
+      ]
+      : [...CHAINS.filter((chain) => chain.id === selectedToken.chainId)];
+  };
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -171,31 +100,12 @@ export function Transfer() {
     const amountFloat = parseFloat(value);
     if (isNaN(amountFloat) || amountFloat <= 0) {
       setError("Please enter a valid amount");
-    } else if (amountFloat > userSOLBalance) {
-      setError("Insufficient SOL balance");
+    } else if (amountFloat > selectedToken.balance) {
+      setError("Insufficient token balance");
     } else {
       setError("");
     }
   };
-
-  const handleKeyDown = (e) => {
-    if (
-      !/[0-9.]/.test(e.key) &&
-      e.key !== "Backspace" &&
-      e.key !== "Tab" &&
-      e.key !== "ArrowLeft" &&
-      e.key !== "ArrowRight" &&
-      e.key !== "Delete"
-    ) {
-      e.preventDefault();
-    }
-  };
-
-  useEffect(() => {
-    squidlAPI.get("/share-identity").then(({ data }) => {
-      console.log({ data });
-    });
-  }, []);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -205,17 +115,6 @@ export function Transfer() {
     }
   };
 
-  useEffect(() => {
-    if (
-      selectedToken &&
-      (selectedToken.chainName === "BSC" ||
-        selectedToken.chainName === "Ethereum")
-    ) {
-      setSelectedChain(chains.find((chain) => chain.chainName === "Oasis"));
-    }
-  }, [selectedToken]);
-
-  const [isTransferring, setIsTransferring] = useState(false);
   async function handleTransfer() {
     if (!selectedToken || !selectedChain) {
       return toast.error("Please select token and chain");
@@ -239,34 +138,37 @@ export function Transfer() {
 
       let transferData;
 
-      if (selectedToken?.nativeToken) {
-        // Handle the native asset (ETH)
-        transferData = {
-          userMetaAddress: userData.metaAddress,
-          chainId: selectedChain.id,
-          isNative: true,
-          tokenAddress: "",
-          tokenDecimals: 18,
-          destinationAddress: destination,
-        }
-      } else {
-        // Handle ERC20 tokens
-        transferData = {
-          userMetaAddress: userData.metaAddress,
-          chainId: selectedChain.id,
-          isNative: false,
-          tokenAddress: selectedToken.tokenAddress,
-          tokenDecimals: selectedToken.decimals,
-          destinationAddress: destination
-        }
-      }
+      // Currently only supports these routes:
+      // - wROSE from BSC (56) to Oasis Sapphire (23294)
+      // - USDC from Ethereum Mainnet (1) to Oasis Sapphire (23294)
+
+      const isDifferentChain = selectedToken.chainId !== selectedChain.id;
+
+      transferData = {
+        userMetaAddress: userData.metaAddress,
+        sourceChainId: selectedToken.chainId,
+        chainId: selectedChain.id,
+        destinationAddress: destination,
+        isDifferentChain: isDifferentChain,
+        isNative: Boolean(selectedToken?.nativeToken),
+        tokenAddress: selectedToken?.nativeToken ? "" : selectedToken.address,
+        tokenDecimals: selectedToken?.nativeToken ? 18 : selectedToken.token.decimals,
+        token: selectedToken,
+      };
+
 
       console.log("Transfer data:", transferData);
       console.log("Stealth addresses:", assets.stealthAddresses);
 
-      const aggregatedAssets = aggregateAssets(assets.stealthAddresses, {
+      console.log('aggregate:', {
         isNative: transferData.isNative,
         chainId: transferData.chainId,
+        tokenAddress: transferData.tokenAddress,
+      })
+
+      const aggregatedAssets = aggregateAssets(assets.stealthAddresses, {
+        isNative: transferData.isNative,
+        chainId: transferData.sourceChainId,
         tokenAddress: transferData.tokenAddress,
       });
 
@@ -276,9 +178,6 @@ export function Transfer() {
       const sortedAssets = aggregatedAssets.sort(
         (a, b) => b.balance - a.balance
       );
-
-      console.log("amount", amount);
-      console.log("BIGINT amount", toBN(amount));
 
       // Convert the amount to a big number in the appropriate unit
       let unitAmount = transferData.isNative
@@ -292,6 +191,10 @@ export function Transfer() {
         if (unitAmount.lte(new BN(0))) return queue;
 
         // Convert asset amount directly to BN with the token's decimals
+        console.log({
+          amount: asset.amount,
+          tokenDecimals: transferData.tokenDecimals,
+        })
         const assetAmount = toBN(asset.amount, transferData.tokenDecimals);
         console.log(`Processing asset with amount: ${assetAmount.toString()} and address: ${asset.address}`);
 
@@ -327,7 +230,7 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.testnet.find((chain) => chain.id === transferData.chainId);
+      const network = CHAINS.find((chain) => chain.id === transferData.chainId);
       console.log("Network:", network);
 
       if (!network) {
@@ -385,15 +288,14 @@ export function Transfer() {
               ["function transfer(address to, uint256 amount) returns (bool)"],
               stealthSigner
             );
-            const tokenAmount = ethers.utils.parseUnits(
-              String(queue.amount),
-              transferData.tokenDecimals
-            );
 
-            txData = await tokenContract.populateTransaction.transfer(
+            console.log("queue.amount", queue.amount);
+            
+            txData = await tokenContract.transfer.populateTransaction(
               transferData.destinationAddress,
-              tokenAmount
+              queue.amount
             );
+            txData.from = stealthSigner.address;
             txData.chainId = network.id;
             txData.nonce = await stealthSigner.getNonce();
             txData.gasPrice = ethers.parseUnits("20", "gwei");
@@ -420,6 +322,8 @@ export function Transfer() {
       let txReceipts = []; // Define txReceipts outside the try-catch block
 
       try {
+        toast.loading("Confirming transactions", { id: "withdrawal" });
+        
         // Send and confirm all transactions
         txReceipts = await Promise.all(
           transactions.map(async (signedTx) => {
@@ -430,8 +334,10 @@ export function Transfer() {
             );
 
             // Wait for transaction to be mined (confirmed)
-            const receipt = await provider.waitForTransaction(txResponse);
-
+            const receipt = await confirmTransaction({
+              txHash: txResponse,
+              provider: provider,
+            })
             console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
             return receipt; // Return receipt for each transaction
           })
@@ -456,7 +362,6 @@ export function Transfer() {
     }
   }
 
-  console.log({ selectedToken, selectedChain });
   return (
     <>
       <SuccessDialog
@@ -479,8 +384,6 @@ export function Transfer() {
           assets={assets}
           setOpen={setOpenTokenDialog}
           isPrivacy={type ? (type === "privacy" ? true : false) : false}
-          tokens={tokens}
-          balances={balances}
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           setAmount={setMaxBalance}
@@ -489,10 +392,10 @@ export function Transfer() {
         <ChainSelectionDialog
           open={openChainDialog}
           setOpen={setOpenChainDialog}
-          isPrivacy={type ? (type === "privacy" ? true : false) : false}
-          chains={CHAINS.testnet}
+          chains={getFilteredChains()}
           selectedChain={selectedChain}
           setSelectedChain={setSelectedChain}
+          isPrivacy={type ? (type === "privacy" ? true : false) : false}
         />
 
         <div className="relative flex gap-4 w-full items-center justify-center">
@@ -537,7 +440,7 @@ export function Transfer() {
                   ) : (
                     <div className="relative size-8">
                       <img
-                        src={selectedToken.nativeToken.logo}
+                        src={selectedToken?.nativeToken ? selectedToken.nativeToken.logoUrl : selectedToken.token.logo}
                         alt="ic"
                         className="object-contain w-full h-full"
                       />
@@ -556,7 +459,7 @@ export function Transfer() {
                   >
                     {selectedToken ? (
                       <div className="flex flex-col items-start text-start">
-                        <p>{selectedToken.nativeToken.name}</p>
+                        <p>{selectedToken?.nativeToken ? selectedToken.nativeToken.name : selectedToken.token.name}</p>
                         <p className="text-[10px] text-neutral-400">
                           {selectedToken.chainName}
                         </p>
@@ -645,6 +548,9 @@ export function Transfer() {
                   Max
                 </button>
               </div>
+            </div>
+            <div className="text-red-500 text-sm">
+              {error}
             </div>
           </div>
         </div>

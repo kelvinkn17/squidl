@@ -120,7 +120,7 @@ export default function Experimental() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.testnet.find((chain) => chain.id === chainId);
+      const network = CHAINS.find((chain) => chain.id === chainId);
       console.log("Network:", network);
 
       if (!network) {
@@ -308,7 +308,7 @@ export default function Experimental() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.mainnet.find((chain) => chain.id === chainId);
+      const network = CHAINS.find((chain) => chain.id === chainId);
       console.log("Network:", network);
 
       if (!network) {
