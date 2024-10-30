@@ -70,16 +70,10 @@ export default function AliasDetail() {
     data: transactionsData,
     isLoading: isLoadingTransactionsData,
     mutate: mutateTransactionsData,
-  } = useSWR(
-    `/user/wallet-assets/${fullAlias
-      .split(".")
-      .slice(1)
-      .join(".")}/aggregated-transactions`,
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      return data;
-    }
-  );
+  } = useSWR(`/user/wallet-assets/${fullAlias}/transactions`, async (url) => {
+    const { data } = await squidlAPI.get(url);
+    return data;
+  });
 
   async function getAssets() {
     setLoadingAssets(true);
