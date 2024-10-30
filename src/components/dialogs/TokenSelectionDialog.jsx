@@ -124,7 +124,7 @@ export default function TokenSelectionDialog({
                       "USD",
                       "en",
                       false,
-                      { decimalPlaces: 0 }
+                      { significantFigures: 5 }
                     )}
                   />
                 </button>
@@ -164,7 +164,7 @@ export default function TokenSelectionDialog({
                       "USD",
                       "en",
                       false,
-                      { decimalPlaces: 0 }
+                      { significantFigures: 5 }
                     )}
                   />
                 </button>

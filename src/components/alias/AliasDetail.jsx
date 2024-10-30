@@ -184,7 +184,7 @@ export default function AliasDetail() {
         />
 
         <div className="absolute right-5 top-5 size-12 rounded-full overflow-hidden">
-          <Nounsies address={userWallets[0]?.address || ""} />
+          <Nounsies address={fullAlias} />
         </div>
 
         <div className="relative w-full h-52 md:h-60 flex flex-col items-center justify-start py-7 px-6">
@@ -370,9 +370,6 @@ export default function AliasDetail() {
                     {date}
                   </p>
                   {groupedTransactions[date].map((tx, idx) => {
-                    const isReceive = userWallets.includes(tx.toAddress);
-                    const isSent = userWallets.includes(tx.fromAddress);
-
                     return (
                       <TxItem
                         key={idx}
@@ -386,17 +383,17 @@ export default function AliasDetail() {
                             ? tx.chain.imageUrl
                             : "/assets/line-logo.png"
                         }
-                        title={
-                          isReceive ? "Receive" : isSent ? "Sent" : "Unknown"
-                        }
+                        title={"Receive"}
                         subtitle={`from ${shortenId(tx.fromAddress)}`}
-                        value={formatCurrency(
+                        value={`+${formatCurrency(
                           tx.amount,
                           tx.isNative
                             ? tx.chain.nativeToken.symbol
                             : tx.token.symbol,
-                          "de"
-                        )}
+                          "de",
+                          false,
+                          { significantFigures: 5 }
+                        )}`}
                       />
                     );
                   })}

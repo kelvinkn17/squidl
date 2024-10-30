@@ -68,7 +68,8 @@ export async function transactor(tx, signer) {
 }
 
 export function getTransferId(
-  address,
+  fromAddress,
+  toAddress,
   tokenAddress,
   value,
   toChainId,
@@ -78,8 +79,8 @@ export function getTransferId(
   return ethers.solidityPackedKeccak256(
     ["address", "address", "address", "uint256", "uint64", "uint64", "uint64"],
     [
-      address,
-      address,
+      fromAddress,
+      toAddress,
       tokenAddress,
       value?.toString(),
       toChainId?.toString(),
@@ -207,7 +208,7 @@ export const approve = async (spenderAddress, signer, token, amount) => {
     const approveTx = await transactor(
       tokenContract.approve(
         spenderAddress,
-        safeParseUnits(amount || "0", token?.decimal ?? 18),
+        ethers.MaxUint256,
         { gasLimit: 100000 }
       ),
       signer

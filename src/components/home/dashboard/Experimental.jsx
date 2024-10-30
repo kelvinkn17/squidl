@@ -10,9 +10,12 @@ import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { poolTransfer } from "../../../lib/cBridge/cBridge.js";
 import { ASSETS_DUMMY } from "./dummy.js";
 import { aggregateAssets } from "../../../utils/assets-utils.js";
+import { useUser } from "../../../providers/UserProvider.jsx";
+import { is } from '../../../../node_modules/date-fns/locale/is';
 
 export default function Experimental() {
   const { contract, signer } = useWeb3();
+  const { assets } = useUser();
   const { primaryWallet } = useDynamicContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -241,6 +244,125 @@ export default function Experimental() {
     }
   };
 
+  const handleWithdrawBridge = async ({
+    amount = 0.000123,
+    metaAddress = "st:eth:0x025c66a53b27a3dbe6e591c6ef58a022538922341a650231a30a04e65494333a7802fc0af3018b0cec9159541bb5efc76c583b6f330a9bb97486cf553e3f6c8dc717",
+    sourceChainId = 56,
+    destinationChainId = 23294,
+    destinationAddress = "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+    tokenAddress = "0xf00600ebc7633462bc4f9c61ea2ce99f5aaebd4a",
+    tokenDecimals = 18,
+    isNative = false,
+    chainId = 56, // BSC
+  }) => {
+    try {
+      console.log("Initiating withdrawal...");
+      setIsLoading(true);
+
+      toast.loading("Preparing withdrawal, please wait...", {
+        id: "withdrawal",
+      });
+
+      const _assets = aggregateAssets(assets.stealthAddresses, {
+        isNative: false,
+        chainId: 56,
+        tokenAddress: tokenAddress,
+      })
+
+      console.log("Assets:", _assets);
+
+      // Sort assets by balance and prepare the withdrawal queue
+      const sortedAssets = _assets.sort(
+        (a, b) => b.balance - a.balance
+      );
+
+      let unitAmount = isNative ? (amount * 10 ** 18) : amount * 10 ** tokenDecimals;
+
+      const withdrawQueue = sortedAssets.reduce((queue, asset) => {
+        if (unitAmount <= 0) return queue;
+
+        const withdrawAmount = Math.min(unitAmount, parseInt(asset.amount));
+        unitAmount -= withdrawAmount;
+
+        return [
+          ...queue,
+          {
+            address: asset.address,
+            ephemeralPub: asset.ephemeralPub,
+            amount: withdrawAmount,
+          },
+        ];
+      }, []);
+
+      console.log("Withdraw queue:", withdrawQueue);
+
+      if (unitAmount > 0) {
+        console.warn(
+          "Insufficient balance to fulfill the requested withdrawal amount."
+        );
+        throw new Error("Insufficient balance to complete withdrawal.");
+      }
+
+      const authSigner = JSON.parse(localStorage.getItem("auth_signer"));
+      if (!authSigner) {
+        return toast.error("Signer not available");
+      }
+
+      const network = CHAINS.mainnet.find((chain) => chain.id === chainId);
+      console.log("Network:", network);
+
+      if (!network) {
+        throw new Error("Network not found");
+      }
+
+      const provider = new JsonRpcProvider(network.rpcUrl);
+
+      let txReceipts = [];
+      for (const queue of withdrawQueue) {
+        const [stealthKey, stealthAddress] =
+          await contract.computeStealthKey.staticCall(
+            authSigner,
+            metaAddress,
+            1,
+            queue.ephemeralPub
+          );
+
+        queue.stealthKey = stealthKey;
+
+        // Create a new signer using the stealth key (private key)
+        const stealthSigner = new ethers.Wallet(stealthKey, provider);
+        console.log('Stealth signer:', stealthSigner);
+
+        const res = await poolTransfer({
+          cBridgeBaseUrl: "https://cbridge-prod2.celer.app",
+          receiverAddress: destinationAddress,
+          signer: stealthSigner,
+          srcChainId: sourceChainId,
+          dstChainId: destinationChainId,
+          tokenSymbol: "wROSE",
+          amount: amount,
+          slippageTolerance: 3000,
+        })
+
+        console.log('celer pool transfer response:', res);
+        txReceipts.push(res);
+      }
+
+      console.log("Confirmed transactions:", txReceipts);
+
+      toast.success("Withdrawal completed successfully",
+        { id: "withdrawal" }
+      );
+    } catch (error) {
+      console.error("Error during withdrawal:", error);
+      toast.error(`Error during withdrawal: ${error.message}`, {
+        id: "withdrawal",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function testTransfer() {
     /*
 
@@ -255,7 +377,6 @@ export default function Experimental() {
  cBridgeBaseUrl mainnet -> https://cbridge-prod2.celer.app
 
 */
-
     try {
       setTransferLoading(true);
 
@@ -295,6 +416,10 @@ export default function Experimental() {
 
         <Button isLoading={isLoading} onClick={handleWithdraw} color="primary">
           Withdraw
+        </Button>
+
+        <Button isLoading={isLoading} onClick={handleWithdrawBridge} color="primary">
+          Withdraw Bridge
         </Button>
 
         <Button

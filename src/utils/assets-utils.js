@@ -15,10 +15,10 @@ export function aggregateAssets(stealthAddresses, { isNative, chainId, tokenAddr
       // If matching balance data is found, format and return the wallet info
       if (balanceData) {
         let formattedAmount
-        if(isNative){
+        if (isNative) {
           formattedAmount = balanceData.balance * 10 ** 18;
-        }else{
-          formattedAmount = balanceData.balance * 10 ** balanceData.decimals;
+        } else {
+          formattedAmount = balanceData.balance * 10 ** balanceData.token.decimals;
         }
 
         return {
