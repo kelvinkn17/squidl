@@ -6,7 +6,6 @@ import { useAtom } from "jotai";
 import { useWeb3 } from "./Web3Provider";
 import { CONTRACT_ADDRESS } from "../config";
 import { signAuthToken } from "../lib/ethers";
-import { useCookies } from "react-cookie";
 import { isSignedInAtom } from "../store/auth-store";
 import { useSession } from "../hooks/use-session";
 import toast from "react-hot-toast";
@@ -46,7 +45,6 @@ export default function AuthProvider({ children }) {
         id: "signing",
       });
 
-      // Add signer to local storage with contract
       const network = await provider.getNetwork();
       const chainId = network.chainId;
 
@@ -122,9 +120,9 @@ export default function AuthProvider({ children }) {
     >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => {
   return useContext(AuthContext);
-}
+};

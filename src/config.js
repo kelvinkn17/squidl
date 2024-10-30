@@ -67,6 +67,7 @@ export const MAINNET_CHAINS = [
     networkId: 0x5afe,
     rpcUrls: ["https://sapphire.oasis.io"],
     vanityName: "Oasis Sapphire",
+    group: "oasis",
   },
 ];
 
@@ -118,6 +119,7 @@ export const TESTNET_CHAINS = [
     networkId: 0x5aff,
     rpcUrls: ["https://testnet.sapphire.oasis.io"],
     vanityName: "Sapphire Testnet",
+    group: "oasis",
   },
 ];
 

@@ -6,8 +6,10 @@ import {
 } from "@oasisprotocol/sapphire-ethers-v6";
 import { ethers } from "ethers";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { CONTRACT_ADDRESS } from "../config";
+import { CONTRACT_ADDRESS, customEvmNetworks } from "../config";
 import ContractABI from "../abi/StealthSigner.json";
+import toast from "react-hot-toast";
+import { sleep } from "../utils/process.js";
 
 /**
  * @typedef {Object} Web3ContextType
@@ -28,7 +30,7 @@ const Web3Context = createContext({
 export const useWeb3 = () => useContext(Web3Context);
 
 export default function Web3Provider({ children }) {
-  const { primaryWallet } = useDynamicContext();
+  const { primaryWallet, handleLogOut } = useDynamicContext();
 
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
@@ -49,7 +51,7 @@ export default function Web3Provider({ children }) {
         ContractABI.abi,
         wrappedSigner
       );
-      
+
       setProvider(wrappedProvider);
       setSigner(wrappedSigner);
       setContract(contract);
@@ -62,9 +64,56 @@ export default function Web3Provider({ children }) {
     }
   }
 
+  async function switchNetworkIfNeeded() {
+    const oasis = customEvmNetworks.find((chain) => chain.group === "oasis");
+
+    console.log("checking...");
+
+    try {
+      const network = await provider?.getNetwork();
+
+      if (network?.chainId !== oasis.chainId) {
+        if (primaryWallet?.connector?.supportsNetworkSwitching()) {
+          try {
+            await primaryWallet.switchNetwork(oasis.chainId);
+
+            await init();
+            return;
+          } catch (error) {
+            console.error("Error switching network:", error);
+            toast.error(
+              `Failed to switch network. Please switch to ${oasis.name} manually.`
+            );
+            await sleep(1000);
+
+            handleLogOut();
+            return;
+          }
+        } else {
+          toast.error(
+            `Network switching not supported. Please switch to ${oasis.name} manually.`
+          );
+          await sleep(1000);
+          handleLogOut();
+          return;
+        }
+      } else {
+        toast.info(`Already connected to ${oasis.name} network.`);
+        await init();
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking network:", error);
+      toast.error(`Error connecting to the network. Please switch manually.`);
+      await sleep(1000);
+      handleLogOut();
+      return;
+    }
+  }
+
   useEffect(() => {
     if (primaryWallet) {
-      init();
+      switchNetworkIfNeeded();
     }
   }, [primaryWallet]);
 
