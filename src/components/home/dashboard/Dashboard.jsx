@@ -21,6 +21,7 @@ import { mainBalance, privateBalance } from "../../../store/balance-store.js";
 import Experimental from "./Experimental.jsx";
 import { useUser } from "../../../providers/UserProvider.jsx";
 import { useWeb3 } from "../../../providers/Web3Provider.jsx";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 function generateRandomEthAddress() {
   const randomBytes = new Uint8Array(20);
@@ -318,15 +319,7 @@ function TotalBalance() {
 
 function BalanceMode({ mode }) {
   const navigate = useNavigate();
-  const { userData } = useUser();
-
-  const { data: totalBalanceUSD, isLoading: totalBalanceLoading } = useSWR(
-    userData ? `/user/wallet-assets/${userData.username}/total-balance` : null,
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      return data;
-    }
-  );
+  const { assets, userData } = useUser();
 
   function onNavigate() {
     if (mode === "available") {
@@ -373,7 +366,7 @@ function BalanceMode({ mode }) {
             </motion.div>
           )}
         </AnimatePresence>
-        {totalBalanceLoading ? (
+        {!assets ? (
           <Skeleton className="w-20 h-10 rounded-lg absolute top-2 left-6" />
         ) : (
           <p
@@ -382,7 +375,7 @@ function BalanceMode({ mode }) {
               "left-6 top-2"
             )}
           >
-            ${totalBalanceUSD?.toLocaleString("en-US")}
+            {formatCurrency(assets.totalBalanceUSD, 'usd')}
           </p>
         )}
       </div>
@@ -401,8 +394,7 @@ function BalanceMode({ mode }) {
         <Button
           onClick={() => {
             navigate(
-              `/${userData.username}.squidl.me/transfer?type=${
-                mode === "private" ? "private" : "main"
+              `/${userData.username}.squidl.me/transfer?type=${mode === "private" ? "private" : "main"
               }`
             );
           }}

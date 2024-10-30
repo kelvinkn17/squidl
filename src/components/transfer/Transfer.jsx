@@ -15,6 +15,7 @@ import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { CHAINS, TESTNET_CHAINS } from "../../config.js";
 import { BN } from "bn.js";
 import { confirmTransaction, handleKeyDown } from "./helpers.js";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 // Make it so that the oasis sapphire (chainId: 23294) shows up on ChainSelectionDialog only when the exact token is selected
 const SUPPORTED_SAPPHIRE_BRIDGE = [
@@ -535,7 +536,7 @@ export function Transfer() {
               <div className="flex gap-4">
                 <div className="flex flex-col items-end justify-center text-end">
                   <p className="text-xs text-[#A1A1A3]">Balance</p>
-                  <p className="text-[#A1A1A3] text-sm">{maxBalance}</p>
+                  <p className="text-[#A1A1A3] text-sm">{formatCurrency(parseFloat(maxBalance.toFixed(5)), '')}</p>
                 </div>
 
                 <div className="h-16 w-[2px] bg-[#E4E4E4]" />
