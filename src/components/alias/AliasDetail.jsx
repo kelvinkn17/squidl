@@ -370,9 +370,6 @@ export default function AliasDetail() {
                     {date}
                   </p>
                   {groupedTransactions[date].map((tx, idx) => {
-                    const isReceive = userWallets.includes(tx.toAddress);
-                    const isSent = userWallets.includes(tx.fromAddress);
-
                     return (
                       <TxItem
                         key={idx}
@@ -386,17 +383,17 @@ export default function AliasDetail() {
                             ? tx.chain.imageUrl
                             : "/assets/line-logo.png"
                         }
-                        title={
-                          isReceive ? "Receive" : isSent ? "Sent" : "Unknown"
-                        }
+                        title={"Receive"}
                         subtitle={`from ${shortenId(tx.fromAddress)}`}
-                        value={formatCurrency(
+                        value={`+${formatCurrency(
                           tx.amount,
                           tx.isNative
                             ? tx.chain.nativeToken.symbol
                             : tx.token.symbol,
-                          "de"
-                        )}
+                          "de",
+                          false,
+                          { significantFigures: 5 }
+                        )}`}
                       />
                     );
                   })}

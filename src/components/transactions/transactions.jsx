@@ -94,25 +94,29 @@ export default function Transactions() {
                     title={
                       tx.stealthAddress.alias.alias === "" ||
                       tx.stealthAddress.alias.alias === null
-                        ? "Unknown"
-                        : `${tx.stealthAddress.alias.alias}.squidl.me`
+                        ? `${user?.username}.squidl.me`
+                        : `${tx.stealthAddress.alias.alias}.${user?.username}.squidl.me`
                     }
                     subtitle={`from ${shortenId(tx.fromAddress)}`}
-                    value={formatCurrency(
+                    value={`+${formatCurrency(
                       tx.amount,
                       tx.isNative
                         ? tx.chain.nativeToken.symbol
                         : tx.token.symbol,
-                      "de"
-                    )}
+                      "de",
+                      false,
+                      { significantFigures: 5 }
+                    )}`}
                     subValue={formatCurrency(
-                      (tx.isNative
-                        ? tx.chain.nativeToken.priceUSD
-                        : tx.token.stats.priceUSD) * tx.amount,
+                      parseFloat(
+                        tx.isNative
+                          ? tx.chain.nativeToken.priceUSD
+                          : tx.token.stats.priceUSD
+                      ) * parseFloat(tx.amount),
                       "USD",
                       "en",
                       false,
-                      { decimalPlaces: 0 }
+                      { significantFigures: 5 }
                     )}
                   />
                 );
