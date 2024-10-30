@@ -25,6 +25,7 @@ import SquidLogo from "../../assets/squidl-logo.svg?react";
 import { shortenAddress } from "../../utils/string.js";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { squidlAPI } from "../../api/squidl.js";
+import AssetItem from "./AssetItem.jsx";
 
 export default function AliasDetail() {
   const navigate = useNavigate();
@@ -64,15 +65,19 @@ export default function AliasDetail() {
   const [isLoadingAssets, setLoadingAssets] = useState(false);
 
   const [isErrorAliasData, setErrorAliasData] = useState(false);
-  const { data: aliasDetailData, isLoading: isLoadingAliasData, mutate: mutateAliasData } = useSWR(`/stealth-address/aliases/${alias}/detail`, async (url) => {
+  const {
+    data: aliasDetailData,
+    isLoading: isLoadingAliasData,
+    mutate: mutateAliasData,
+  } = useSWR(`/stealth-address/aliases/${alias}/detail`, async (url) => {
     try {
       setLoading(true);
       const { data } = await squidlAPI.get(url);
-      console.log('aliasData', data)
+      console.log("aliasData", data);
       setErrorAliasData(false);
       return data;
     } catch (error) {
-      console.error('Error fetching alias data', error)
+      console.error("Error fetching alias data", error);
       setErrorAliasData(true);
       return null;
     } finally {
@@ -83,9 +88,11 @@ export default function AliasDetail() {
   async function getAssets() {
     setLoadingAssets(true);
     try {
-      const res = await squidlAPI.get(`/user/wallet-assets/${aliasId}`);
-
-      setAssets(res.data.data.tokenAssets);
+      const { data } = await squidlAPI.get(
+        `/user/wallet-assets/${fullAlias}/assets`
+      );
+      console.log("assets", [...data.aggregatedBalances.native]);
+      setAssets([...data.aggregatedBalances.native]);
     } catch (e) {
       console.log(e);
     } finally {
@@ -240,7 +247,7 @@ export default function AliasDetail() {
         }}
         className="relative bg-white rounded-[30.5px] p-2 flex items-center justify-between w-full"
       >
-        {(isLoadingAlias) ? (
+        {isLoadingAlias ? (
           <Skeleton className="flex rounded-full w-32 h-5 ml-4" />
         ) : (
           <Tooltip content={<p>{aliasDetailData?.stealthAddress?.address}</p>}>
@@ -307,24 +314,26 @@ export default function AliasDetail() {
               color="primary"
               className="flex items-center justify-center w-full h-40"
             />
+          ) : assets && assets.length > 0 ? (
+            <div className="flex flex-col w-full">
+              {assets.map((item, idx) => {
+                return (
+                  <AssetItem
+                    key={idx}
+                    logoImg={item.nativeToken.logo}
+                    balance={item.balance}
+                    chainName={item.chainName}
+                    chainLogo={item.chainLogo}
+                    priceUSD={item.priceUSD}
+                    tokenSymbol={item.nativeToken.symbol}
+                  />
+                );
+              })}
+            </div>
           ) : (
-            assets && (
-              <div className="flex flex-col w-full">
-                {assets.map((item, idx) => {
-                  return (
-                    <TxItem
-                      key={idx}
-                      tokenImg={item.logo}
-                      chainImg={"/assets/eth-logo.png"}
-                      title={item.name}
-                      subtitle={"Ethereum"}
-                      value={formatCurrency(item.amount, item.symbol)}
-                      subValue={formatCurrency(item.amountUSD, "USD")}
-                    />
-                  );
-                })}
-              </div>
-            )
+            <div className="w-full flex items-center justify-center h-48">
+              No assets found
+            </div>
           )}
         </div>
 
