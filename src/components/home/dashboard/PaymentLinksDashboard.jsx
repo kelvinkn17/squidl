@@ -55,7 +55,6 @@ export default function PaymentLinksDashboard({ user }) {
     data: aliases,
     isLoading,
     mutate,
-    isValidating,
   } = useSWR("/stealth-address/aliases", async (url) => {
     const { data } = await squidlAPI.get(url);
     return data;
