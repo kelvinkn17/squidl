@@ -127,13 +127,16 @@ export const customEvmNetworks =
   import.meta.env.VITE_APP_ENVIRONMENT === "dev"
     ? TESTNET_CHAINS
     : MAINNET_CHAINS;
+
 export const CHAINS = {
   mainnet: [
     {
       id: 1,
       name: "Ethereum Mainnet",
       chainlistUrl: "https://chainlist.org/chain/1",
-      rpcUrl: "https://sepolia.infura.io/v3/0be86a45a4c3431398571a7c81165708",
+      rpcUrl: `https://sepolia.infura.io/v3/${
+        import.meta.env.VITE_INFURA_API_KEY
+      }`,
       nativeToken: "ETH",
       blockExplorerUrl: "https://etherscan.io",
       imageUrl:
@@ -143,8 +146,9 @@ export const CHAINS = {
       id: 137,
       name: "Polygon Mainnet",
       chainlistUrl: "https://chainlist.org/chain/137",
-      rpcUrl:
-        "https://polygon-mainnet.infura.io/v3/0be86a45a4c3431398571a7c81165708",
+      rpcUrl: `https://polygon-mainnet.infura.io/v3/${
+        import.meta.env.VITE_INFURA_API_KEY
+      }`,
       nativeToken: "MATIC",
       blockExplorerUrl: "https://polygonscan.com",
       imageUrl:
@@ -163,13 +167,27 @@ export const CHAINS = {
       imageUrl:
         "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/bsc.svg",
     },
+    {
+      id: 23294,
+      isTestnet: false,
+      name: "Oasis Sapphire Mainnet",
+      chainlistUrl: "https://chainlist.org/chain/23294",
+      rpcUrl: "https://sapphire.oasis.io",
+      nativeToken: "ROSE",
+      blockExplorerUrl: "https://explorer.oasis.io/mainnet/sapphire",
+      imageUrl:
+        "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/oasis.svg",
+      compatibility: [137],
+    },
   ],
   testnet: [
     {
       id: 11155111,
       name: "Ethereum Sepolia",
       chainlistUrl: "https://chainlist.org/chain/11155111",
-      rpcUrl: "https://sepolia.infura.io/v3/0be86a45a4c3431398571a7c81165708",
+      rpcUrl: `https://sepolia.infura.io/v3/${
+        import.meta.env.VITE_INFURA_API_KEY
+      }`,
       nativeToken: "ETH",
       blockExplorerUrl: "https://sepolia.etherscan.io/",
       imageUrl:
