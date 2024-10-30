@@ -10,33 +10,6 @@ import { isCreateLinkDialogAtom } from "../../../store/dialog-store.js";
 import SquidLogo from "../../../assets/squidl-logo.svg?react";
 import { useEffect } from "react";
 
-export const paymentLinks = [
-  {
-    name: "blabla.squidl.me",
-  },
-  {
-    name: "john.squidl.me",
-  },
-  {
-    name: "marquee.squidl.me",
-  },
-  {
-    name: "test.squidl.me",
-  },
-  {
-    name: "dd.squidl.me",
-  },
-  {
-    name: "ss.squidl.me",
-  },
-  {
-    name: "xx.squidl.me",
-  },
-  {
-    name: "doe.squidl.me",
-  },
-];
-
 export const AVAILABLE_CARDS_BG = [
   "/assets/card-1.png",
   "/assets/card-2.png",
@@ -108,12 +81,15 @@ export default function PaymentLinksDashboard({ user }) {
         </Button>
       </motion.div>
       {isLoading ? (
-        <Skeleton className="rounded-2xl w-full h-72" />
+        // create stacked skeleton
+
+        <div className="w-full px-6 py-4">
+          <Skeleton className="h-64 w-full rounded-2xl" />
+        </div>
       ) : (
         <div className="w-full flex flex-col px-6">
           {aliases && aliases.length > 0 ? (
             aliases.slice(0, 4).map((alias, idx) => {
-              console.log({ alias });
               const bgImage =
                 AVAILABLE_CARDS_BG[idx % AVAILABLE_CARDS_BG.length];
               const userAlias = alias.alias

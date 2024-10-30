@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import {
   AVAILABLE_CARDS_BG,
   CARDS_SCHEME,
-  paymentLinks,
 } from "../home/dashboard/PaymentLinksDashboard.jsx";
 import useSWR from "swr";
 import { squidlAPI } from "../../api/squidl.js";
 import { Button } from "@nextui-org/react";
 import { useAtom } from "jotai";
+import SquidLogo from "../../assets/squidl-logo.svg?react";
 import { isCreateLinkDialogAtom } from "../../store/dialog-store.js";
 
 export default function PaymentLinks() {
@@ -84,14 +84,27 @@ export default function PaymentLinks() {
                 </div>
 
                 <div className="absolute left-5 bottom-6 flex items-center justify-between">
-                  <h1 className="text-[#484B4E] font-bold text-2xl">SQUIDL</h1>
+                  <h1
+                    className={cnm(
+                      "text-[#484B4E] font-bold text-2xl",
+
+                      bgImage === "/assets/card-2.png"
+                        ? "text-black"
+                        : "text-white"
+                    )}
+                  >
+                    SQUIDL
+                  </h1>
                 </div>
 
                 <div className="absolute right-5 bottom-6 flex items-center justify-between">
-                  <img
-                    src="/assets/squidl-logo-only.png"
-                    alt="logo"
-                    className="object-contain w-12 h-16"
+                  <SquidLogo
+                    className={cnm(
+                      "w-12 ",
+                      bgImage === "/assets/card-2.png"
+                        ? "fill-black"
+                        : "fill-white"
+                    )}
                   />
                 </div>
               </motion.div>
