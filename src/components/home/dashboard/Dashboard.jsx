@@ -108,6 +108,25 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
 
   const [mode, setMode] = useState("ens");
 
+  // const { data: aliasDetailData, mutate: mutateAliasData } = useSWR(
+  //   `/stealth-address/aliases/${user}/detail`,
+  //   async (url) => {
+  //     try {
+  //       setLoading(true);
+  //       const { data } = await squidlAPI.get(url);
+  //       console.log("aliasData", data);
+  //       return data;
+  //     } catch (error) {
+  //       console.error("Error fetching alias data", error);
+  //       return null;
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  // );
+
+  console.log({ user });
+
   const onCopy = (text) => {
     navigator.clipboard.writeText(
       mode === "ens" ? `${user?.username}.squidl.me` : `${user?.address}`

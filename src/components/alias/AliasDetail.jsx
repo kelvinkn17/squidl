@@ -31,14 +31,10 @@ export default function AliasDetail() {
   const navigate = useNavigate();
   const setBack = useSetAtom(isBackAtom);
   const userWallets = useUserWallets();
-  const { fullAlias, aliasId } = useLoaderData();
+  const { fullAlias } = useLoaderData();
   const { alias, parent } = useParams();
   const [searchParams] = useSearchParams();
   const scheme = searchParams.get("scheme");
-
-  const { contract } = useWeb3();
-
-  console.log(fullAlias);
 
   const layoutId = `payment-card-${alias}-${parent}`;
 
@@ -55,34 +51,18 @@ export default function AliasDetail() {
     window.scrollTo(0, 0);
   }, []);
 
-  const { data: user, isLoading } = useSWR("/auth/me", async (url) => {
-    const { data } = await squidlAPI.get(url);
-    return data;
-  });
-
-  const [isLoadingAlias, setLoading] = useState(false);
   const [assets, setAssets] = useState(null);
+  const [totalBalanceUSD, setTotalBalanceUSD] = useState(0);
   const [isLoadingAssets, setLoadingAssets] = useState(false);
 
-  const [isErrorAliasData, setErrorAliasData] = useState(false);
   const {
     data: aliasDetailData,
-    isLoading: isLoadingAliasData,
+    isLoading: isLoadingAlias,
     mutate: mutateAliasData,
   } = useSWR(`/stealth-address/aliases/${alias}/detail`, async (url) => {
-    try {
-      setLoading(true);
-      const { data } = await squidlAPI.get(url);
-      console.log("aliasData", data);
-      setErrorAliasData(false);
-      return data;
-    } catch (error) {
-      console.error("Error fetching alias data", error);
-      setErrorAliasData(true);
-      return null;
-    } finally {
-      setLoading(false);
-    }
+    const { data } = await squidlAPI.get(url);
+    console.log("aliasData", data);
+    return data;
   });
 
   async function getAssets() {
@@ -91,8 +71,12 @@ export default function AliasDetail() {
       const { data } = await squidlAPI.get(
         `/user/wallet-assets/${fullAlias}/assets`
       );
-      console.log("assets", [...data.aggregatedBalances.native]);
-      setAssets([...data.aggregatedBalances.native]);
+      console.log({ assets: data });
+      setAssets([
+        ...data.aggregatedBalances.native,
+        ...data.aggregatedBalances.erc20,
+      ]);
+      setTotalBalanceUSD(data.totalBalanceUSD);
     } catch (e) {
       console.log(e);
     } finally {
@@ -200,14 +184,18 @@ export default function AliasDetail() {
             </button>
           </div>
 
-          <h1
-            className={cnm(
-              "absolute top-1/2 -translate-y-1/2 text-white font-extrabold text-2xl",
-              scheme === "1" && "text-black"
-            )}
-          >
-            $0
-          </h1>
+          {isLoadingAssets ? (
+            <Skeleton className="rounded-lg w-14 h-8 absolute top-1/2 -translate-y-1/2" />
+          ) : (
+            <h1
+              className={cnm(
+                "absolute top-1/2 -translate-y-1/2 text-white font-extrabold text-2xl",
+                scheme === "1" && "text-black"
+              )}
+            >
+              ${totalBalanceUSD}
+            </h1>
+          )}
 
           <div className="absolute left-5 bottom-6 flex items-center justify-between">
             <h1
