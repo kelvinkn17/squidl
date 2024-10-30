@@ -129,8 +129,18 @@ export default function TokenSelectionDialog({
                     title={token.nativeToken.name}
                     // isPrivate={isPrivate}
                     subtitle={token.chainName}
-                    value={parseFloat(token.balance.toFixed(5))}
-                    subValue={`$${token.priceUSD}`}
+                    value={formatCurrency(
+                      parseFloat(token.balance.toFixed(5)),
+                      token.nativeToken.symbol,
+                      "de"
+                    )}
+                    subValue={formatCurrency(
+                      token.priceUSD,
+                      "USD",
+                      "en",
+                      false,
+                      { decimalPlaces: 0 }
+                    )}
                   />
                 </button>
               );
@@ -159,8 +169,18 @@ export default function TokenSelectionDialog({
                     title={token.token.name}
                     // isPrivate={isPrivate}
                     subtitle={token.chainName}
-                    value={parseFloat(token.balance.toFixed(5))}
-                    subValue={`$${token.priceUSD}`}
+                    value={formatCurrency(
+                      parseFloat(token.balance.toFixed(5)),
+                      token.token.symbol,
+                      "de"
+                    )}
+                    subValue={formatCurrency(
+                      token.priceUSD,
+                      "USD",
+                      "en",
+                      false,
+                      { decimalPlaces: 0 }
+                    )}
                   />
                 </button>
               );
