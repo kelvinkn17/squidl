@@ -9,7 +9,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSetAtom } from "jotai";
 import { isBackAtom } from "../../store/payment-card-store.js";
 import { useUserWallets } from "@dynamic-labs/sdk-react-core";
@@ -26,6 +26,7 @@ import { shortenAddress } from "../../utils/string.js";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { squidlAPI } from "../../api/squidl.js";
 import AssetItem from "./AssetItem.jsx";
+import { format } from "date-fns";
 
 export default function AliasDetail() {
   const navigate = useNavigate();
@@ -85,6 +86,21 @@ export default function AliasDetail() {
     }
   });
 
+  const {
+    data: transactionsData,
+    isLoading: isLoadingTransactionsData,
+    mutate: mutateTransactionsData,
+  } = useSWR(
+    `/user/wallet-assets/${fullAlias
+      .split(".")
+      .slice(1)
+      .join(".")}/aggregated-transactions`,
+    async (url) => {
+      const { data } = await squidlAPI.get(url);
+      return data;
+    }
+  );
+
   async function getAssets() {
     setLoadingAssets(true);
     try {
@@ -100,10 +116,27 @@ export default function AliasDetail() {
     }
   }
 
+  const groupedTransactions = useMemo(() => {
+    return transactionsData?.reduce((acc, tx) => {
+      const dateKey = format(new Date(tx.createdAt), "MM/dd/yyyy");
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(tx);
+      return acc;
+    }, {});
+  }, [transactionsData]);
+
   useEffect(() => {
     mutateAliasData();
     getAssets();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(mutateTransactionsData, 10000);
+
+    return () => clearInterval(interval);
+  }, [mutateTransactionsData]);
 
   return (
     <div
@@ -340,28 +373,57 @@ export default function AliasDetail() {
         {/* Transactions */}
         <div className="flex flex-col w-full gap-3">
           <h1 className="font-bold text-[#19191B] text-lg">Transactions</h1>
-          <p className="text-[#A1A1A3] font-medium text-sm mt-1">09/20/2024</p>
-          <div className="flex flex-col w-full">
-            <TxItem
-              tokenImg={"/assets/eth-logo.png"}
-              chainImg={"/assets/line-logo.png"}
-              title={"Receive"}
-              subtitle={`from ${shortenId(
-                "0x02919065a8Ef7A782Bb3D9f3DEFef2FA0a4d1f37"
-              )}`}
-              value={"0.0001"}
+          {isLoadingTransactionsData ? (
+            <Spinner
+              size="md"
+              color="primary"
+              className="flex items-center justify-center w-full h-40"
             />
+          ) : transactionsData && transactionsData.length > 0 ? (
+            <div className="flex flex-col w-full">
+              {Object.keys(groupedTransactions).map((date) => (
+                <div key={date} className="mb-4">
+                  <p className="text-[#A1A1A3] font-medium text-sm mt-1">
+                    {date}
+                  </p>
+                  {groupedTransactions[date].map((tx, idx) => {
+                    const isReceive = userWallets.includes(tx.toAddress);
+                    const isSent = userWallets.includes(tx.fromAddress);
 
-            <TxItem
-              tokenImg={"/assets/usdc-logo.png"}
-              chainImg={"/assets/eth-logo.png"}
-              title={"Receive"}
-              subtitle={`from ${shortenId(
-                "0x02919065a8Ef7A782Bb3D9f3DE5ef2FA0a4d1f47"
-              )}`}
-              value={"0.005"}
-            />
-          </div>
+                    return (
+                      <TxItem
+                        key={idx}
+                        tokenImg={
+                          tx.isNative
+                            ? tx.chain.nativeToken.logo
+                            : tx.token.logo
+                        }
+                        chainImg={
+                          tx.chain.imageUrl
+                            ? tx.chain.imageUrl
+                            : "/assets/line-logo.png"
+                        }
+                        title={
+                          isReceive ? "Receive" : isSent ? "Sent" : "Unknown"
+                        }
+                        subtitle={`from ${shortenId(tx.fromAddress)}`}
+                        value={formatCurrency(
+                          tx.amount,
+                          tx.isNative
+                            ? tx.chain.nativeToken.symbol
+                            : tx.token.symbol
+                        )}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full flex items-center justify-center h-48">
+              No transactions found
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
