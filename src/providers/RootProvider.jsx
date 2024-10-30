@@ -3,6 +3,7 @@ import DynamicProvider from "./DynamicProvider.jsx";
 import AuthProvider from "./AuthProvider.jsx";
 import Web3Provider from "./Web3Provider.jsx";
 import { SWRConfig } from "swr";
+import UserProvider from "./UserProvider.jsx";
 export default function RootProvider({ children }) {
   return (
     <SWRConfig
@@ -14,7 +15,11 @@ export default function RootProvider({ children }) {
       <NextUIProvider>
         <DynamicProvider>
           <Web3Provider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <UserProvider>
+                {children}
+              </UserProvider>
+            </AuthProvider>
           </Web3Provider>
         </DynamicProvider>
       </NextUIProvider>

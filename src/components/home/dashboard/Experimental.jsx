@@ -8,6 +8,8 @@ import axios from "axios";
 import { getSigner } from "@dynamic-labs/ethers-v6";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import { poolTransfer } from "../../../lib/cBridge/cBridge.js";
+import { ASSETS_DUMMY } from "./dummy.js";
+import { aggregateAssets } from "../../../utils/assets-utils.js";
 
 export default function Experimental() {
   const { contract, signer } = useWeb3();
@@ -48,27 +50,23 @@ export default function Experimental() {
     }
   };
 
-  const handleWithdraw = async ({ amount = 0.00005 }) => {
+  const handleWithdraw = async ({
+    amount = 0.0005
+  }) => {
     try {
       console.log("Initiating withdrawal...");
       setIsLoading(true);
 
       const metaAddress =
         "st:eth:0x025c66a53b27a3dbe6e591c6ef58a022538922341a650231a30a04e65494333a7802fc0af3018b0cec9159541bb5efc76c583b6f330a9bb97486cf553e3f6c8dc717";
-      const assets = [
-        {
-          address: "0xF366E7D225d99AB2F5fA3416fC2Da2D6497F0747",
-          ephemeralPub:
-            "0x02e609640b58587b1382d4d6701a7d963c7d0f0fa72e71af78c3ae2514e5effb17",
-          nativeBalance: 0.01 * 10 ** 18,
-        },
-        {
-          address: "0x533736caBc0756c0B05D06Ba8DeabC16f1Dc5680",
-          ephemeralPub:
-            "0x02c6a80dfbbee3b8ca8ccf42c31e2299fb600021e914477a9aeca66f04d8be6c8f",
-          nativeBalance: 0.011 * 10 ** 18,
-        },
-      ];
+
+      const assets = aggregateAssets(ASSETS_DUMMY.stealthAddresses, {
+        isNative: true,
+        chainId: 11155111,
+        tokenAddress: "",
+      })
+
+      console.log("Assets:", assets);
 
       const destinationAddress = "0x278A2d5B5C8696882d1D2002cE107efc74704ECf";
       const isNative = true;
@@ -86,13 +84,13 @@ export default function Experimental() {
 
       // Sort assets by balance and prepare the withdrawal queue
       const sortedAssets = assets.sort(
-        (a, b) => b.nativeBalance - a.nativeBalance
+        (a, b) => b.balance - a.balance
       );
 
       const withdrawQueue = sortedAssets.reduce((queue, asset) => {
         if (etherAmount <= 0) return queue;
 
-        const withdrawAmount = Math.min(etherAmount, asset.nativeBalance);
+        const withdrawAmount = Math.min(etherAmount, parseInt(asset.amount));
         etherAmount -= withdrawAmount;
 
         return [
@@ -134,7 +132,7 @@ export default function Experimental() {
           console.log({
             auth: authSigner,
             metaAddress,
-            k: 1,
+            k: 51,
             ephemeralPub: queue.ephemeralPub,
           });
 
@@ -143,7 +141,7 @@ export default function Experimental() {
             await contract.computeStealthKey.staticCall(
               authSigner,
               metaAddress,
-              1,
+              51,
               queue.ephemeralPub
             );
 
@@ -151,6 +149,7 @@ export default function Experimental() {
 
           // Create a new signer using the stealth key (private key)
           const stealthSigner = new ethers.Wallet(stealthKey, provider);
+          console.log('Stealth signer:', stealthSigner);
 
           // Handle the native asset (ETH)
           let txData;
