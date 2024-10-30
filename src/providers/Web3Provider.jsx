@@ -36,7 +36,11 @@ export default function Web3Provider({ children }) {
   const [signer, setSigner] = useState(null);
   const [contract, setContract] = useState(null);
   const [isLoaded, setLoaded] = useState(false);
+  const [isNetworkChecking, setIsNetworkChecking] = useState(false);
+
   const isInitiating = useRef(false);
+
+  const oasis = customEvmNetworks.find((chain) => chain.group === "oasis");
 
   async function init() {
     if (isInitiating.current) return;
@@ -56,6 +60,8 @@ export default function Web3Provider({ children }) {
       setSigner(wrappedSigner);
       setContract(contract);
       setLoaded(true);
+
+      monitorNetworkChange();
     } catch (e) {
       console.error("Error initializing web3 provider", e);
       setLoaded(false);
@@ -64,8 +70,11 @@ export default function Web3Provider({ children }) {
     }
   }
 
-  async function switchNetworkIfNeeded() {
-    const oasis = customEvmNetworks.find((chain) => chain.group === "oasis");
+  async function switchNetworkIfNeeded(withLoading = false) {
+    if (withLoading) {
+      if (isNetworkChecking) return;
+      setIsNetworkChecking(true);
+    }
 
     console.log("checking...");
 
@@ -84,7 +93,7 @@ export default function Web3Provider({ children }) {
             toast.error(
               `Failed to switch network. Please switch to ${oasis.name} manually.`
             );
-            await sleep(1000);
+            await sleep(2000);
 
             handleLogOut();
             return;
@@ -93,7 +102,7 @@ export default function Web3Provider({ children }) {
           toast.error(
             `Network switching not supported. Please switch to ${oasis.name} manually.`
           );
-          await sleep(1000);
+          await sleep(2000);
           handleLogOut();
           return;
         }
@@ -105,15 +114,33 @@ export default function Web3Provider({ children }) {
     } catch (error) {
       console.error("Error checking network:", error);
       toast.error(`Error connecting to the network. Please switch manually.`);
-      await sleep(1000);
+      await sleep(2000);
       handleLogOut();
       return;
+    } finally {
+      setIsNetworkChecking(false);
     }
+  }
+
+  function monitorNetworkChange() {
+    const connector = primaryWallet.connector;
+
+    if (!connector) {
+      console.error("No connector found.");
+      return;
+    }
+
+    // Listen for network changes
+    connector.on("chainChange", async (_) => {
+      if (signer) {
+        await switchNetworkIfNeeded(true);
+      }
+    });
   }
 
   useEffect(() => {
     if (primaryWallet) {
-      switchNetworkIfNeeded();
+      switchNetworkIfNeeded(false);
     }
   }, [primaryWallet]);
 
