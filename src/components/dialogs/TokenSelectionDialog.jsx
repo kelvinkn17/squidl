@@ -2,6 +2,7 @@ import { Button, Modal, ModalContent } from "@nextui-org/react";
 import { Icons } from "../shared/Icons.jsx";
 import { motion } from "framer-motion";
 import { cnm } from "../../utils/style.js";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 export default function TokenSelectionDialog({
   open,
@@ -70,20 +71,26 @@ export default function TokenSelectionDialog({
                 title={token.tokenName}
                 isPrivate={isPrivate}
                 subtitle={token.chainName}
-                value={
+                value={formatCurrency(
                   balances.find(
                     (balance) =>
                       balance.chainName === token.chainName &&
                       balance.tokenName === token.tokenName
-                  )?.balance
-                }
-                subValue={`$${
+                  )?.balance,
+                  token.tokenName,
+                  "de"
+                )}
+                subValue={formatCurrency(
                   balances.find(
                     (balance) =>
                       balance.chainName === token.chainName &&
                       balance.tokenName === token.tokenName
-                  )?.balance
-                }`}
+                  )?.balance,
+                  "USD",
+                  "en",
+                  false,
+                  { decimalPlaces: 0 }
+                )}
               />
             </button>
           ))}

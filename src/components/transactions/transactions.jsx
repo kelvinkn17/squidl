@@ -4,8 +4,9 @@ import { Icons } from "../shared/Icons.jsx";
 import { squidlAPI } from "../../api/squidl.js";
 import { useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { formatCurrency, shortenId } from "../../utils/formatting-utils.js";
+import { shortenId } from "../../utils/formatting-utils.js";
 import { Spinner } from "@nextui-org/react";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 export default function Transactions() {
   const { data: user, isLoading } = useSWR("/auth/me", async (url) => {
@@ -21,7 +22,7 @@ export default function Transactions() {
     mutate: mutateTransactionsData,
   } = useSWR(
     shouldFetchTransactions
-      ? `/user/wallet-assets/${user.username}.squidl.me/aggregated-transactions`
+      ? `/user/wallet-assets/${user?.username}.squidl.me/aggregated-transactions`
       : null,
     async (url) => {
       const { data } = await squidlAPI.get(url);
@@ -101,13 +102,17 @@ export default function Transactions() {
                       tx.amount,
                       tx.isNative
                         ? tx.chain.nativeToken.symbol
-                        : tx.token.symbol
+                        : tx.token.symbol,
+                      "de"
                     )}
                     subValue={formatCurrency(
                       (tx.isNative
                         ? tx.chain.nativeToken.priceUSD
                         : tx.token.stats.priceUSD) * tx.amount,
-                      "USD"
+                      "USD",
+                      "en",
+                      false,
+                      { decimalPlaces: 0 }
                     )}
                   />
                 );

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@coingecko/cryptoformat": "^0.8.2",
     "@dynamic-labs/ethereum": "^3.1.0",
     "@dynamic-labs/ethers-v6": "^3.1.1",
     "@dynamic-labs/sdk-react-core": "^3.1.0",
@@ -22,10 +23,12 @@
     "dayjs": "^1.11.13",
     "ethers": "^6.13.2",
     "framer-motion": "^11.5.5",
+    "i": "^0.3.7",
     "jotai": "^2.10.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.443.0",
     "nanoid": "^5.0.7",
+    "npm": "^10.9.0",
     "react": "^18.3.1",
     "react-cookie": "^7.2.0",
     "react-dom": "^18.3.1",
