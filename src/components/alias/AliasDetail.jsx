@@ -184,7 +184,7 @@ export default function AliasDetail() {
         />
 
         <div className="absolute right-5 top-5 size-12 rounded-full overflow-hidden">
-          <Nounsies address={userWallets[0]?.address || ""} />
+          <Nounsies address={fullAlias} />
         </div>
 
         <div className="relative w-full h-52 md:h-60 flex flex-col items-center justify-start py-7 px-6">

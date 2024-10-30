@@ -83,8 +83,8 @@ export default function Transactions() {
                     addressNounsies={
                       tx.stealthAddress.alias.alias === "" ||
                       tx.stealthAddress.alias.alias === null
-                        ? "1"
-                        : tx.stealthAddress.alias.alias
+                        ? `${user?.username}.squidl.me`
+                        : `${tx.stealthAddress.alias.alias}.${user?.username}.squidl.me`
                     }
                     chainImg={
                       tx.chain.imageUrl
