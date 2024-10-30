@@ -36,21 +36,21 @@ export const MAINNET_CHAINS = [
     rpcUrls: ["https://eth.drpc.org"],
     vanityName: "Ethereum",
   },
-  // polygon
   {
-    blockExplorerUrls: ["https://polygonscan.com"], // Explorer for the Testnet
-    chainId: 0x89,
-    chainName: "Polygon",
-    iconUrls: ["https://app.dynamic.xyz/assets/networks/eth.svg"],
-    name: "Polygon",
+    blockExplorerUrls: ["https://bscscan.com"], // Explorer for the Testnet
+    chainId: 0x38,
+    chainName: "Binance Smart Chain",
+    chainlistUrl: "https://chainlist.org/chain/56",
+    iconUrls: ["https://app.dynamic.xyz/assets/networks/bnb.svg"],
+    name: "Binance Smart Chain",
     nativeCurrency: {
-      name: "Pol",
-      symbol: "POL",
+      name: "BNB",
+      symbol: "BNB",
       decimals: 18,
     },
-    networkId: 0x89,
-    rpcUrls: ["https://rpc.ankr.com/polygon"],
-    vanityName: "Polygon",
+    networkId: 0x38,
+    rpcUrls: ["https://binance.llamarpc.com"],
+    vanityName: "Binance Smart Chain",
   },
   // oasis sapphire
   {
@@ -92,7 +92,7 @@ export const TESTNET_CHAINS = [
     blockExplorerUrls: ["https://amoy.polygonscan.com"], // Explorer for the Testnet
     chainId: 0x13882,
     chainName: "Polygon Amoy",
-    iconUrls: ["https://app.dynamic.xyz/assets/networks/matic.svg"],
+    iconUrls: ["https://app.dynamic.xyz/assets/networks/bsc.svg"],
     name: "Polygon Amoy",
     nativeCurrency: {
       name: "Pol",
@@ -148,6 +148,18 @@ export const CHAINS = {
       imageUrl:
         "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/matic.svg",
     },
+    {
+      id: 56,
+      name: "Binance Smart Chain",
+      isTestnet: false,
+      chainlistUrl: "https://chainlist.org/chain/56",
+      rpcUrl:
+        `https://bsc-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
+      nativeToken: "BNB",
+      blockExplorerUrl: "https://bscscan.com/",
+      imageUrl:
+        "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/bsc.svg",
+    }
   ],
   testnet: [
     {
@@ -160,16 +172,6 @@ export const CHAINS = {
       imageUrl:
         "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
     },
-    // {
-    //   id: 80002,
-    //   name: "Polygon Amoy",
-    //   chainlistUrl: "https://chainlist.org/chain/80002",
-    //   rpcUrl: "https://rpc.ankr.com/polygon_amoy",
-    //   nativeToken: "MATIC",
-    //   blockExplorerUrl: "https://www.oklink.com/amoy",
-    //   imageUrl:
-    //     "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
-    // },
     {
       id: 23295,
       name: "Oasis Sapphire Testnet",
