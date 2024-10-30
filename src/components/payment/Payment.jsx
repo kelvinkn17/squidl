@@ -26,22 +26,20 @@ export default function Payment() {
   const { contract } = useWeb3();
 
   const [isAliasDataError, setAliasDataError] = useState(false);
-  const { data: aliasData, isLoading: isLoadingAliasData } = useSWR(`/stealth-address/aliases/${alias_url}/detail`, async (url) => {
-    try {
-      const { data } = await squidlAPI.get(url);
-      console.log('aliasData', data)
-      return data;
-    } catch (error) {
-      console.error('Error fetching alias data', error)
-      setAliasDataError(true);
-      return null;
+  const { data: aliasData, isLoading: isLoadingAliasData } = useSWR(
+    `/stealth-address/aliases/${alias_url}/detail`,
+    async (url) => {
+      try {
+        const { data } = await squidlAPI.get(url);
+        console.log("aliasData", data);
+        return data;
+      } catch (error) {
+        console.error("Error fetching alias data", error);
+        setAliasDataError(true);
+        return null;
+      }
     }
-  });
-
-  const { data: user, isLoading } = useSWR("/auth/me", async (url) => {
-    const { data } = await squidlAPI.get(url);
-    return data;
-  });
+  );
 
   const onCopy = (text) => {
     toast.success("Copied to clipboard", {
@@ -144,15 +142,19 @@ export default function Payment() {
           {/* Error State */}
           {isAliasDataError && (
             <div className="text-center max-w-[16rem]">
-              Failed to fetch the info, make sure to check the link and try again.
+              Failed to fetch the info, make sure to check the link and try
+              again.
             </div>
           )}
 
           {/* Success State */}
-          {(!isLoadingAliasData && aliasData && !isAliasDataError) && (
+          {!isLoadingAliasData && aliasData && !isAliasDataError && (
             <div className="bg-[#F9F9FA] rounded-[32px] py-9 px-10 md:px-20 flex flex-col items-center justify-center w-full h-full">
               <h1 className="font-medium text-xl">
-                Send to <span className="font-semibold text-primary">{aliasData.user.username}</span>
+                Send to{" "}
+                <span className="font-semibold text-primary">
+                  {aliasData.user.username}
+                </span>
               </h1>
 
               <Chains />
@@ -222,5 +224,3 @@ export default function Payment() {
     </>
   );
 }
-
-

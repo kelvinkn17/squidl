@@ -125,6 +125,7 @@ export const customEvmNetworks =
   import.meta.env.VITE_APP_ENVIRONMENT === "dev"
     ? TESTNET_CHAINS
     : MAINNET_CHAINS;
+
 export const CHAINS = {
   mainnet: [
     {

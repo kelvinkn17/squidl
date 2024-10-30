@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { mainBalance, privateBalance } from "../../../store/balance-store.js";
 import Experimental from "./Experimental.jsx";
 import { useUser } from "../../../providers/UserProvider.jsx";
+import { useWeb3 } from "../../../providers/Web3Provider.jsx";
 
 function generateRandomEthAddress() {
   const randomBytes = new Uint8Array(20);
@@ -94,20 +95,45 @@ export default function Dashboard() {
 }
 
 function ReceiveCard({ setOpenQr, user, isLoading }) {
-  const [randomAddress, setRandomAddress] = useState(
-    generateRandomEthAddress()
-  );
+  const [aliasAddress, setAliasAddress] = useState("");
 
+  const { contract } = useWeb3();
   const [loadingAlias, setLoading] = useState(false);
 
-  async function generateAddress() {
+  const [mode, setMode] = useState("ens");
+
+  async function generateStealthAddress() {
+    console.log("Generating stealth address");
+    if (isLoading || !contract) return;
+
     setLoading(true);
-    await sleep(1000);
-    setRandomAddress(generateRandomEthAddress());
-    setLoading(false);
+    try {
+      const auth = localStorage.getItem("auth_signer");
+
+      if (!auth) {
+        return toast.error("Signer not available");
+      }
+
+      const [metaAddress] = await contract.getMetaAddress.staticCall(
+        JSON.parse(auth),
+        0
+      );
+
+      const [address1, ePub1, tag1] =
+        await contract.generateStealthAddress.staticCall(metaAddress, 0);
+
+      console.log(address1);
+      setAliasAddress(address1);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const [mode, setMode] = useState("ens");
+  useEffect(() => {
+    generateStealthAddress();
+  }, [contract]);
 
   // const { data: aliasDetailData, mutate: mutateAliasData } = useSWR(
   //   `/stealth-address/aliases/${user}/detail`,
@@ -130,7 +156,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
 
   const onCopy = (text) => {
     navigator.clipboard.writeText(
-      mode === "ens" ? `${user?.username}.squidl.me` : `${user?.address}`
+      mode === "ens" ? `${user?.username}.squidl.me` : aliasAddress
     );
     toast.success("Copied to clipboard", {
       duration: 1000,
@@ -182,7 +208,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
               loadingAlias ? (
                 <Skeleton className="flex rounded-full w-20 h-8" />
               ) : (
-                <p>{shortenAddress(randomAddress)}</p>
+                <p>{shortenAddress(aliasAddress)}</p>
               )
             ) : (
               <p>{user?.username}.squidl.me</p>
@@ -192,7 +218,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
         <div className="flex items-center gap-2">
           {mode === "address" ? (
             <button
-              onClick={() => generateAddress()}
+              onClick={() => generateStealthAddress()}
               className="bg-purply-50 size-9 rounded-full flex items-center justify-center"
             >
               <Icons.refresh className="text-[#563EEA] size-5" />
@@ -375,7 +401,7 @@ function BalanceMode({ mode }) {
         <Button
           onClick={() => {
             navigate(
-              `/james.squidl.me/transfer?type=${
+              `/${userData.username}.squidl.me/transfer?type=${
                 mode === "private" ? "private" : "main"
               }`
             );
