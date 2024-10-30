@@ -19,6 +19,7 @@
     "@openzeppelin/contracts": "^5.0.2",
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "^1.7.7",
+    "bn.js": "^5.2.1",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "ethers": "^6.13.2",

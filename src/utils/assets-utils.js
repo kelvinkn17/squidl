@@ -1,3 +1,4 @@
+import { BN } from "bn.js";
 import { ethers } from "ethers";
 
 export function aggregateAssets(stealthAddresses, { isNative, chainId, tokenAddress }) {
@@ -22,8 +23,8 @@ export function aggregateAssets(stealthAddresses, { isNative, chainId, tokenAddr
         }
 
         return {
-          address: wallet.address,
-          ephemeralPub: wallet.ephemeralPub,
+          address: wallet.address || "",
+          ephemeralPub: wallet.ephemeralPub || "",
           viewHint: wallet.viewHint,
           balance: balanceData.balance,
           amount: formattedAmount.toString(),
@@ -34,4 +35,18 @@ export function aggregateAssets(stealthAddresses, { isNative, chainId, tokenAddr
       return null;
     })
     .filter(wallet => wallet !== null); // Filter out any wallets without a matching balance
+}
+
+export function toBN(amount, decimals) {
+  const amountStr = amount.toString();
+
+  if (!amountStr.includes('.')) {
+    return new BN(amountStr).mul(new BN(10).pow(new BN(decimals))); // Shift integer amount
+  }
+
+  const [integerPart, fractionalPart] = amountStr.split('.');
+  const adjustedFractional = fractionalPart.padEnd(decimals, '0').slice(0, decimals);
+  const fullAmountStr = integerPart + adjustedFractional;
+
+  return new BN(fullAmountStr);
 }

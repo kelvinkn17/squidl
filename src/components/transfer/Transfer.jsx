@@ -9,10 +9,11 @@ import ChainSelectionDialog from "../dialogs/ChainSelectionDialog.jsx";
 import { cnm } from "../../utils/style.js";
 import SuccessDialog from "../dialogs/SuccessDialog.jsx";
 import { useUser } from "../../providers/UserProvider.jsx";
-import { aggregateAssets } from "../../utils/assets-utils.js";
+import { aggregateAssets, toBN } from "../../utils/assets-utils.js";
 import { ethers, JsonRpcProvider } from "ethers";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { CHAINS, TESTNET_CHAINS } from "../../config.js";
+import { BN } from "bn.js";
 
 const publicTokens = [
   {
@@ -48,6 +49,7 @@ const privateTokens = [
 ];
 
 export function Transfer() {
+  const { userData } = useUser();
   const [search] = useSearchParams();
   const type = search.get("type");
   const isPrivate = type === "private";
@@ -61,54 +63,54 @@ export function Transfer() {
   const chains =
     type === "private"
       ? [
-          {
-            id: 1,
-            token: "eth",
-            chain: "eth",
-            tokenName: "Ethereum",
-            chainName: "BSC",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/bsc-logo.png",
-          },
-          {
-            id: 2,
-            token: "eth",
-            chain: "eth",
-            tokenName: "USDC",
-            chainName: "Ethereum",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/ethc-logo.png",
-          },
-          {
-            id: 3,
-            token: "eth",
-            chain: "eth",
-            tokenName: "USDC",
-            chainName: "Oasis",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-        ]
+        {
+          id: 1,
+          token: "eth",
+          chain: "eth",
+          tokenName: "Ethereum",
+          chainName: "BSC",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/bsc-logo.png",
+        },
+        {
+          id: 2,
+          token: "eth",
+          chain: "eth",
+          tokenName: "USDC",
+          chainName: "Ethereum",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/ethc-logo.png",
+        },
+        {
+          id: 3,
+          token: "eth",
+          chain: "eth",
+          tokenName: "USDC",
+          chainName: "Oasis",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/oasis-logo.png",
+        },
+      ]
       : [
-          {
-            id: 4,
-            token: "eth",
-            chain: "eth",
-            tokenName: "ETH",
-            chainName: "Ethereum",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-          {
-            id: 1,
-            token: "eth",
-            chain: "eth",
-            tokenName: "ETH",
-            chainName: "Oasis",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-        ];
+        {
+          id: 4,
+          token: "eth",
+          chain: "eth",
+          tokenName: "ETH",
+          chainName: "Ethereum",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/oasis-logo.png",
+        },
+        {
+          id: 1,
+          token: "eth",
+          chain: "eth",
+          tokenName: "ETH",
+          chainName: "Oasis",
+          tokenLogoUrl: "/assets/usdc.png",
+          chainLogoUrl: "/assets/oasis-logo.png",
+        },
+      ];
 
   const { assets, isAssetsLoading } = useUser();
   const { contract } = useWeb3();
@@ -119,30 +121,30 @@ export function Transfer() {
   const [selectedToken, setSelectedToken] = useState(null);
   const [selectedChain, setSelectedChain] = useState(null);
   const [openSuccess, setOpenSuccess] = useState(false);
-  const [destination, setDestination] = useState("");
+  const [destination, setDestination] = useState("0x278A2d5B5C8696882d1D2002cE107efc74704ECf");
   const [maxBalance, setMaxBalance] = useState(0);
 
   const [balances, setBalances] = useState(
     type === "private"
       ? [
-          {
-            tokenName: "USDC",
-            chainName: "Oasis",
-            balance: 3000,
-          },
-        ]
+        {
+          tokenName: "USDC",
+          chainName: "Oasis",
+          balance: 3000,
+        },
+      ]
       : [
-          {
-            tokenName: "USDC",
-            chainName: "BSC",
-            balance: 1000,
-          },
-          {
-            tokenName: "USDC",
-            chainName: "Ethereum",
-            balance: 2000,
-          },
-        ]
+        {
+          tokenName: "USDC",
+          chainName: "BSC",
+          balance: 1000,
+        },
+        {
+          tokenName: "USDC",
+          chainName: "Ethereum",
+          balance: 2000,
+        },
+      ]
   );
 
   const navigate = useNavigate();
@@ -213,6 +215,7 @@ export function Transfer() {
     }
   }, [selectedToken]);
 
+  const [isTransferring, setIsTransferring] = useState(false);
   async function handleTransfer() {
     if (!selectedToken || !selectedChain) {
       return toast.error("Please select token and chain");
@@ -231,57 +234,88 @@ export function Transfer() {
     }
 
     try {
+      setIsTransferring(true);
       console.log("Initiating transfer...");
 
-      const metaAddress =
-        "st:eth:0x025c66a53b27a3dbe6e591c6ef58a022538922341a650231a30a04e65494333a7802fc0af3018b0cec9159541bb5efc76c583b6f330a9bb97486cf553e3f6c8dc717";
+      let transferData;
+
+      if (selectedToken?.nativeToken) {
+        // Handle the native asset (ETH)
+        transferData = {
+          userMetaAddress: userData.metaAddress,
+          chainId: selectedChain.id,
+          isNative: true,
+          tokenAddress: "",
+          tokenDecimals: 18,
+          destinationAddress: destination,
+        }
+      } else {
+        // Handle ERC20 tokens
+        transferData = {
+          userMetaAddress: userData.metaAddress,
+          chainId: selectedChain.id,
+          isNative: false,
+          tokenAddress: selectedToken.tokenAddress,
+          tokenDecimals: selectedToken.decimals,
+          destinationAddress: destination
+        }
+      }
+
+      console.log("Transfer data:", transferData);
+      console.log("Stealth addresses:", assets.stealthAddresses);
 
       const aggregatedAssets = aggregateAssets(assets.stealthAddresses, {
-        isNative: true,
-        chainId: 11155111,
-        tokenAddress: "",
+        isNative: transferData.isNative,
+        chainId: transferData.chainId,
+        tokenAddress: transferData.tokenAddress,
       });
 
       console.log("Assets from handle transfer:", aggregatedAssets);
-
-      const destinationAddress = destination;
-      const isNative = true;
-      const chainId = selectedChain.chainId;
-
-      // Mock token data for ERC20 tokens
-      const tokenAddress = "0x53844F9577C2334e541Aec7Df7174ECe5dF1fCf0";
-      const tokenDecimals = 18;
-
-      // Convert Ether amount to Wei for calculation
-      let etherAmount = amount * 10 ** 18;
-      if (etherAmount <= 0) {
-        throw new Error("Invalid withdrawal amount.");
-      }
 
       // Sort assets by balance and prepare the withdrawal queue
       const sortedAssets = aggregatedAssets.sort(
         (a, b) => b.balance - a.balance
       );
 
-      const withdrawQueue = sortedAssets.reduce((queue, asset) => {
-        if (etherAmount <= 0) return queue;
+      console.log("amount", amount);
+      console.log("BIGINT amount", toBN(amount));
 
-        const withdrawAmount = Math.min(etherAmount, parseInt(asset.amount));
-        etherAmount -= withdrawAmount;
+      // Convert the amount to a big number in the appropriate unit
+      let unitAmount = transferData.isNative
+        ? toBN(amount, 18) // Use 18 decimals for native token
+        : toBN(amount, transferData.tokenDecimals); // Use token-specific decimals
+
+      console.log("Initial Unit Amount:", unitAmount.toString());
+
+      // Process the withdraw queue with bn.js for stability
+      const withdrawQueue = sortedAssets.reduce((queue, asset) => {
+        if (unitAmount.lte(new BN(0))) return queue;
+
+        // Convert asset amount directly to BN with the token's decimals
+        const assetAmount = toBN(asset.amount, transferData.tokenDecimals);
+        console.log(`Processing asset with amount: ${assetAmount.toString()} and address: ${asset.address}`);
+
+        // Calculate the amount to withdraw
+        const withdrawAmount = unitAmount.lt(assetAmount) ? unitAmount : assetAmount;
+        unitAmount = unitAmount.sub(withdrawAmount);
+
+        console.log(`Withdraw Amount: ${withdrawAmount.toString()}`);
+        console.log(`Remaining Unit Amount: ${unitAmount.toString()}`);
 
         return [
           ...queue,
           {
             address: asset.address,
             ephemeralPub: asset.ephemeralPub,
-            amount: withdrawAmount,
+            amount: withdrawAmount.toString(), // Convert back to string if needed
           },
         ];
       }, []);
 
-      if (etherAmount > 0) {
+      if (unitAmount.gt(new BN(0))) {
         console.warn(
-          "Insufficient balance to fulfill the requested withdrawal amount."
+          "Insufficient balance to fulfill the requested withdrawal amount.",
+          unitAmount.toString()
         );
         throw new Error("Insufficient balance to complete withdrawal.");
       }
@@ -293,7 +327,7 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.testnet.find((chain) => chain.id === chainId);
+      const network = CHAINS.testnet.find((chain) => chain.id === transferData.chainId);
       console.log("Network:", network);
 
       if (!network) {
@@ -307,8 +341,8 @@ export function Transfer() {
         try {
           console.log({
             auth: authSigner,
-            metaAddress,
-            k: 51,
+            metaAddress: transferData.userMetaAddress,
+            k: 1,
             ephemeralPub: queue.ephemeralPub,
           });
 
@@ -316,8 +350,8 @@ export function Transfer() {
           const [stealthKey, stealthAddress] =
             await contract.computeStealthKey.staticCall(
               authSigner,
-              metaAddress,
-              51,
+              transferData.userMetaAddress,
+              1,
               queue.ephemeralPub
             );
 
@@ -332,13 +366,13 @@ export function Transfer() {
           // Handle the native asset (ETH)
           let txData;
 
-          if (isNative) {
+          if (transferData.isNative) {
             // TODO: If the balance can't cover the gas fee, reduce the amount
             console.log("INSIDE IS NATIVE");
             // Minimal transaction data for ETH transfer
             txData = {
               from: stealthSigner.address,
-              to: destinationAddress,
+              to: transferData.destinationAddress,
               value: queue.amount,
               chainId: network.id,
               nonce: await stealthSigner.getNonce(),
@@ -347,17 +381,17 @@ export function Transfer() {
           } else {
             // TODO: Handle ERC20 tokens
             const tokenContract = new ethers.Contract(
-              tokenAddress,
+              transferData.tokenAddress,
               ["function transfer(address to, uint256 amount) returns (bool)"],
               stealthSigner
             );
             const tokenAmount = ethers.utils.parseUnits(
               String(queue.amount),
-              tokenDecimals
+              transferData.tokenDecimals
             );
 
             txData = await tokenContract.populateTransaction.transfer(
-              destinationAddress,
+              transferData.destinationAddress,
               tokenAmount
             );
             txData.chainId = network.id;
@@ -417,6 +451,8 @@ export function Transfer() {
       toast.error(`Error during withdrawal: ${error.message}`, {
         id: "withdrawal",
       });
+    } finally {
+      setIsTransferring(false);
     }
   }
 
@@ -454,7 +490,7 @@ export function Transfer() {
           open={openChainDialog}
           setOpen={setOpenChainDialog}
           isPrivacy={type ? (type === "privacy" ? true : false) : false}
-          chains={TESTNET_CHAINS}
+          chains={CHAINS.testnet}
           selectedChain={selectedChain}
           setSelectedChain={setSelectedChain}
         />
@@ -555,7 +591,7 @@ export function Transfer() {
                       <img
                         src={
                           selectedChain
-                            ? selectedChain.iconUrls[0]
+                            ? selectedChain.imageUrl
                             : "/assets/coin-earth.png"
                         }
                         alt="ic"
@@ -572,7 +608,7 @@ export function Transfer() {
                       selectedChain ? "text-neutral-600" : "text-neutral-300"
                     )}
                   >
-                    {selectedChain ? selectedChain.chainName : "Select Chain"}
+                    {selectedChain ? selectedChain.name : "Select Chain"}
                   </p>
                 </div>
               </div>
@@ -656,179 +692,13 @@ export function Transfer() {
 
         <Button
           onClick={handleTransfer}
+          isLoading={isTransferring}
+          isDisabled={!selectedToken || !selectedChain || !amount || !destination}
           className="h-16 mt-[10vh] md:mt-[15vh] bg-[#563EEA] w-full rounded-[42px] font-bold text-white"
         >
-          Transfer
+          {isTransferring ? "Transferring your funds..." : "Transfer"}
         </Button>
       </div>
     </>
   );
 }
-
-const AVAILABLE_ROUTES = [
-  // USDC
-  {
-    token: "usdc",
-    chain: "eth",
-    tokenName: "USDC",
-    chainName: "Ethereum",
-    routes: [
-      {
-        token: "usdc",
-        chain: "oasis",
-        tokenName: "USDC",
-        chainName: "Oasis",
-        isPrivate: true,
-      },
-      {
-        token: "usdc",
-        chain: "eth",
-        tokenName: "USDC",
-        chainName: "Ethereum",
-        isPrivate: false,
-      },
-    ],
-  },
-  {
-    token: "usdc",
-    chain: "plg",
-    tokenName: "USDC",
-    chainName: "Polygon",
-    routes: [
-      {
-        token: "usdc",
-        chain: "oasis",
-        tokenName: "USDC",
-        chainName: "Oasis",
-        isPrivate: true,
-      },
-      {
-        token: "usdc",
-        chain: "eth",
-        tokenName: "USDC",
-        chainName: "Ethereum",
-        isPrivate: false,
-      },
-      {
-        token: "usdc",
-        chain: "plg",
-        tokenName: "USDC",
-        chainName: "Polygon",
-        isPrivate: false,
-      },
-    ],
-  },
-  {
-    token: "usdc",
-    chain: "lna",
-    tokenName: "USDC",
-    chainName: "Linea",
-    routes: [
-      {
-        token: "usdc",
-        chain: "lna",
-        tokenName: "USDC",
-        chainName: "Linea",
-        isPrivate: false,
-      },
-    ],
-  },
-  {
-    token: "usdc",
-    chain: "flw",
-    tokenName: "USDC",
-    chainName: "Flow EVM",
-    routes: [
-      {
-        token: "usdc",
-        chain: "flw",
-        tokenName: "USDC",
-        chainName: "Flow EVM",
-        isPrivate: false,
-      },
-    ],
-  },
-
-  // ETH
-  {
-    token: "eth",
-    chain: "eth",
-    tokenName: "ETH",
-    chainName: "Ethereum",
-    routes: [
-      {
-        token: "eth",
-        chain: "oasis",
-        tokenName: "eth",
-        chainName: "Oasis",
-        isPrivate: true,
-      },
-      {
-        token: "eth",
-        chain: "eth",
-        tokenName: "ETH",
-        chainName: "Ethereum",
-        isPrivate: false,
-      },
-    ],
-  },
-  {
-    token: "eth",
-    chain: "plg",
-    tokenName: "USDC",
-    chainName: "Polygon",
-    routes: [
-      {
-        token: "eth",
-        chain: "oasis",
-        tokenName: "ETH",
-        chainName: "Oasis",
-        isPrivate: true,
-      },
-      {
-        token: "eth",
-        chain: "eth",
-        tokenName: "ETH",
-        chainName: "Ethereum",
-        isPrivate: false,
-      },
-      {
-        token: "eth",
-        chain: "plg",
-        tokenName: "ETH",
-        chainName: "Polygon",
-        isPrivate: false,
-      },
-    ],
-  },
-  {
-    token: "eth",
-    chain: "lna",
-    tokenName: "ETH",
-    chainName: "Linea",
-    routes: [
-      {
-        token: "eth",
-        chain: "lna",
-        tokenName: "ETH",
-        chainName: "Linea",
-        isPrivate: false,
-      },
-    ],
-  },
-  {
-    token: "eth",
-    chain: "flw",
-    tokenName: "ETH",
-    chainName: "Flow EVM",
-    routes: [
-      {
-        token: "eth",
-        chain: "flw",
-        tokenName: "ETH",
-        chainName: "Flow EVM",
-        isPrivate: false,
-      },
-    ],
-  },
-];

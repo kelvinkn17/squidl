@@ -29,6 +29,8 @@ export default function UserProvider({ children }) {
         `/user/wallet-assets/${userData.username}/all-assets`
       );
 
+      console.log("User assets", res.data);
+
       setAssets(res.data);
     } catch (error) {
       console.error("Error fetching user assets", error);
@@ -37,10 +39,6 @@ export default function UserProvider({ children }) {
       setAssetsLoading(false);
     }
   };
-
-  useEffect(() => {
-    console.log("assets from user provider", assets);
-  }, [assets]);
 
   useEffect(() => {
     if (isSignedIn && userData && userData?.username) {

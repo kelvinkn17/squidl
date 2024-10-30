@@ -132,7 +132,7 @@ export const CHAINS = {
       id: 1,
       name: "Ethereum Mainnet",
       chainlistUrl: "https://chainlist.org/chain/1",
-      rpcUrl: "https://sepolia.infura.io/v3/0be86a45a4c3431398571a7c81165708",
+      rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
       nativeToken: "ETH",
       blockExplorerUrl: "https://etherscan.io",
       imageUrl:
@@ -143,7 +143,7 @@ export const CHAINS = {
       name: "Polygon Mainnet",
       chainlistUrl: "https://chainlist.org/chain/137",
       rpcUrl:
-        "https://polygon-mainnet.infura.io/v3/0be86a45a4c3431398571a7c81165708",
+        `https://polygon-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
       nativeToken: "MATIC",
       blockExplorerUrl: "https://polygonscan.com",
       imageUrl:
@@ -179,7 +179,7 @@ export const CHAINS = {
       id: 11155111,
       name: "Ethereum Sepolia",
       chainlistUrl: "https://chainlist.org/chain/11155111",
-      rpcUrl: "https://sepolia.infura.io/v3/0be86a45a4c3431398571a7c81165708",
+      rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
       nativeToken: "ETH",
       blockExplorerUrl: "https://sepolia.etherscan.io/",
       imageUrl:
