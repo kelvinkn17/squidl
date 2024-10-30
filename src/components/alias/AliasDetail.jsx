@@ -20,13 +20,14 @@ import {
   CARDS_SCHEME,
 } from "../home/dashboard/PaymentLinksDashboard.jsx";
 import { cnm } from "../../utils/style.js";
-import { formatCurrency, shortenId } from "../../utils/formatting-utils.js";
+import { shortenId } from "../../utils/formatting-utils.js";
 import SquidLogo from "../../assets/squidl-logo.svg?react";
 import { shortenAddress } from "../../utils/string.js";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { squidlAPI } from "../../api/squidl.js";
 import AssetItem from "./AssetItem.jsx";
 import { format } from "date-fns";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 export default function AliasDetail() {
   const navigate = useNavigate();
@@ -393,7 +394,8 @@ export default function AliasDetail() {
                           tx.amount,
                           tx.isNative
                             ? tx.chain.nativeToken.symbol
-                            : tx.token.symbol
+                            : tx.token.symbol,
+                          "de"
                         )}
                       />
                     );
