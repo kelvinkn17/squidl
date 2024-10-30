@@ -2,6 +2,7 @@ import { Button, Modal, ModalContent } from "@nextui-org/react";
 import { Icons } from "../shared/Icons.jsx";
 import { motion } from "framer-motion";
 import { cnm } from "../../utils/style.js";
+import { useUser } from "../../providers/UserProvider.jsx";
 
 export default function TokenSelectionDialog({
   open,
@@ -14,7 +15,17 @@ export default function TokenSelectionDialog({
   balances,
   setAmount,
 }) {
+  const { assets } = useUser();
   console.log({ balances, tokens });
+
+  if (!assets) {
+    return (
+      <div>
+        <h1>Loading...</h1>
+      </div>
+    )
+  }
+
   return (
     <motion.div
       initial={{ height: 0 }}
@@ -43,7 +54,7 @@ export default function TokenSelectionDialog({
           />
         </div>
         <div className="flex flex-col w-full mt-4 overflow-y-auto flex-grow min-h-0 px-6 pb-6">
-          {tokens.map((token, idx) => (
+          {/* {tokens.map((token, idx) => (
             <button
               key={idx}
               onClick={() => {
@@ -86,7 +97,65 @@ export default function TokenSelectionDialog({
                 }`}
               />
             </button>
-          ))}
+          ))} */}
+
+          {assets?.aggregatedBalances && assets.aggregatedBalances.native.map((token, index) => {
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  setSelectedToken(token);
+                  setOpen(false);
+                  setAmount(token.balance);
+                }}
+                className={cnm(
+                  "px-4 py-2 ",
+                  selectedToken &&
+                  selectedToken.id === token.id &&
+                  "bg-neutral-100 rounded-xl"
+                )}
+              >
+                <Token
+                  tokenImg={token.nativeToken.logo}
+                  chainImg={token.chainLogo}
+                  title={token.nativeToken.name}
+                  // isPrivate={isPrivate}
+                  subtitle={token.chainName}
+                  value={parseFloat(token.balance.toFixed(5))}
+                  subValue={`$${token.priceUSD}`}
+                />
+              </button>
+            )
+          })}
+
+          {assets?.aggregatedBalances && assets.aggregatedBalances.erc20.map((token, index) => {
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  setSelectedToken(token);
+                  setOpen(false);
+                  setAmount(token.balance);
+                }}
+                className={cnm(
+                  "px-4 py-2 ",
+                  selectedToken &&
+                  selectedToken.id === token.id &&
+                  "bg-neutral-100 rounded-xl"
+                )}
+              >
+                <Token
+                  tokenImg={token.token.logo}
+                  chainImg={token.chainLogo}
+                  title={token.token.name}
+                  // isPrivate={isPrivate}
+                  subtitle={token.chainName}
+                  value={parseFloat(token.balance.toFixed(5))}
+                  subValue={`$${token.priceUSD}`}
+                />
+              </button>
+            )
+          })}
         </div>
       </div>
     </motion.div>

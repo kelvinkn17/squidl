@@ -4,6 +4,7 @@ import { squidlAPI } from "../api/squidl";
 import useSWR from "swr";
 import { useAuth } from "./AuthProvider";
 import toast from "react-hot-toast";
+import { useLocalStorage } from "@uidotdev/usehooks";
 
 
 const UserContext = createContext({
@@ -13,11 +14,13 @@ const UserContext = createContext({
 export default function UserProvider({ children }) {
   const { isSignedIn } = useSession()
   const { userData } = useAuth()
-  const [assets, setAssets] = useState({})
+  const [assets, setAssets] = useLocalStorage('user-assets', null)
 
   const handleFetchAssets = async () => {
     try {
-      console.log(`Fetching assets for ${userData.username}.squidl.eth`)
+      console.log(`Fetching assets for ${userData.username}.squidl.eth`, {
+        userData
+      })
 
       const res = await squidlAPI.get(
         `/user/wallet-assets/${userData.username}.squidl.eth/assets`
@@ -32,13 +35,17 @@ export default function UserProvider({ children }) {
   }
 
   useEffect(() => {
-    if (isSignedIn && userData) {
+    console.log('assets', assets)
+  }, [assets])
+
+  useEffect(() => {
+    if (isSignedIn && userData && userData?.username) {
       // Fetch assets every 10 seconds
       handleFetchAssets()
 
       const interval = setInterval(() => {
         handleFetchAssets()
-      }, 10000)
+      }, 20000)
 
       return () => {
         clearInterval(interval)
