@@ -4,14 +4,14 @@ import { squidlAPI, squidlPublicAPI } from "../api/squidl";
 import { isGetStartedDialogAtom } from "../store/dialog-store";
 import { useAtom } from "jotai";
 import { useWeb3 } from "./Web3Provider";
-import { CONTRACT_ADDRESS } from "../config";
+import { CONTRACT_ADDRESS, customEvmNetworks } from "../config";
 import { signAuthToken } from "../lib/ethers";
-import { useCookies } from "react-cookie";
 import { isSignedInAtom } from "../store/auth-store";
 import { useSession } from "../hooks/use-session";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 import useSWR from "swr";
+import { sleep } from "../utils/process.js";
 
 const AuthContext = createContext({
   userData: {},
@@ -36,12 +36,65 @@ export default function AuthProvider({ children }) {
 
   // console.log({ primaryWallet, user });
 
+  const checkNetwork = async () => {
+    const oasis = customEvmNetworks.find((chain) => chain.group === "oasis");
+
+    try {
+      const network = await provider.getNetwork();
+      const chainId = network.chainId;
+
+      if (chainId !== oasis.chainId) {
+        if (primaryWallet?.connector?.supportsNetworkSwitching()) {
+          try {
+            await primaryWallet.switchNetwork(oasis.chainId);
+            return {
+              success: true,
+            };
+          } catch (error) {
+            console.error("Error switching network:", error);
+            toast.error(
+              `Failed to switch. Please switch to ${oasis.name} manually.`
+            );
+            return {
+              success: false,
+            };
+          }
+        } else {
+          toast.error(
+            `Network switching not supported. Please switch to ${oasis.name} manually.`
+          );
+        }
+      } else {
+        toast.info(`Already connected to ${oasis.name} network.`);
+      }
+
+      return {
+        success: true,
+      };
+    } catch (error) {
+      console.error("Error fetching network:", error);
+      toast.error(
+        `Error connecting to network. Please switch to ${oasis.name}.`
+      );
+      return {
+        success: false,
+      };
+    }
+  };
+
   const login = async (user) => {
     if (isSigningIn || !user || !primaryWallet) return;
 
     setSigningIn(true);
 
     try {
+      const checked = await checkNetwork();
+
+      if (!checked.success) {
+        await sleep(1000);
+        throw new Error(`Network switching failed.`);
+      }
+
       toast.loading("Please sign the request to continue", {
         id: "signing",
       });
@@ -122,9 +175,9 @@ export default function AuthProvider({ children }) {
     >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => {
   return useContext(AuthContext);
-}
+};

@@ -67,6 +67,7 @@ export const MAINNET_CHAINS = [
     networkId: 0x5afe,
     rpcUrls: ["https://sapphire.oasis.io"],
     vanityName: "Oasis Sapphire",
+    group: "oasis",
   },
 ];
 
@@ -118,6 +119,7 @@ export const TESTNET_CHAINS = [
     networkId: 0x5aff,
     rpcUrls: ["https://testnet.sapphire.oasis.io"],
     vanityName: "Sapphire Testnet",
+    group: "oasis",
   },
 ];
 
@@ -153,13 +155,14 @@ export const CHAINS = {
       name: "Binance Smart Chain",
       isTestnet: false,
       chainlistUrl: "https://chainlist.org/chain/56",
-      rpcUrl:
-        `https://bsc-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
+      rpcUrl: `https://bsc-mainnet.infura.io/v3/${
+        import.meta.env.VITE_INFURA_API_KEY
+      }`,
       nativeToken: "BNB",
       blockExplorerUrl: "https://bscscan.com/",
       imageUrl:
         "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/bsc.svg",
-    }
+    },
   ],
   testnet: [
     {
