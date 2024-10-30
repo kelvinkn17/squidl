@@ -21,7 +21,7 @@ export default function Transactions() {
     mutate: mutateTransactionsData,
   } = useSWR(
     shouldFetchTransactions
-      ? `/user/wallet-assets/${user.username}.squidl.me/transactions`
+      ? `/user/wallet-assets/${user.username}.squidl.me/aggregated-transactions`
       : null,
     async (url) => {
       const { data } = await squidlAPI.get(url);
@@ -94,7 +94,7 @@ export default function Transactions() {
                       tx.stealthAddress.alias.alias === "" ||
                       tx.stealthAddress.alias.alias === null
                         ? "Unknown"
-                        : tx.stealthAddress.alias.alias
+                        : `${tx.stealthAddress.alias.alias}.squidl.me`
                     }
                     subtitle={`from ${shortenId(tx.fromAddress)}`}
                     value={formatCurrency(
