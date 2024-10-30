@@ -61,6 +61,7 @@ export function Transfer() {
   // If selected token is changed, change the selected chain to the same chain as the token
   useEffect(() => {
     if (selectedToken) {
+      console.log("Selected Token:", selectedToken);
       setSelectedChain(CHAINS.find((chain) => chain.id === selectedToken.chainId));
     }
   }, [selectedToken]);
@@ -440,7 +441,7 @@ export function Transfer() {
                   ) : (
                     <div className="relative size-8">
                       <img
-                        src={selectedToken?.nativeToken ? selectedToken.nativeToken.logoUrl : selectedToken.token.logo}
+                        src={selectedToken?.nativeToken ? selectedToken.nativeToken.logo : selectedToken.token.logo}
                         alt="ic"
                         className="object-contain w-full h-full"
                       />
