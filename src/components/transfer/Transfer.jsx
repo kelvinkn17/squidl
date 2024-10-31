@@ -63,54 +63,54 @@ export function Transfer() {
   const chains =
     type === "private"
       ? [
-        {
-          id: 1,
-          token: "eth",
-          chain: "eth",
-          tokenName: "Ethereum",
-          chainName: "BSC",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/bsc-logo.png",
-        },
-        {
-          id: 2,
-          token: "eth",
-          chain: "eth",
-          tokenName: "USDC",
-          chainName: "Ethereum",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/ethc-logo.png",
-        },
-        {
-          id: 3,
-          token: "eth",
-          chain: "eth",
-          tokenName: "USDC",
-          chainName: "Oasis",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-      ]
+          {
+            id: 1,
+            token: "eth",
+            chain: "eth",
+            tokenName: "Ethereum",
+            chainName: "BSC",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/bsc-logo.png",
+          },
+          {
+            id: 2,
+            token: "eth",
+            chain: "eth",
+            tokenName: "USDC",
+            chainName: "Ethereum",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/ethc-logo.png",
+          },
+          {
+            id: 3,
+            token: "eth",
+            chain: "eth",
+            tokenName: "USDC",
+            chainName: "Oasis",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/oasis-logo.png",
+          },
+        ]
       : [
-        {
-          id: 4,
-          token: "eth",
-          chain: "eth",
-          tokenName: "ETH",
-          chainName: "Ethereum",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-        {
-          id: 1,
-          token: "eth",
-          chain: "eth",
-          tokenName: "ETH",
-          chainName: "Oasis",
-          tokenLogoUrl: "/assets/usdc.png",
-          chainLogoUrl: "/assets/oasis-logo.png",
-        },
-      ];
+          {
+            id: 4,
+            token: "eth",
+            chain: "eth",
+            tokenName: "ETH",
+            chainName: "Ethereum",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/oasis-logo.png",
+          },
+          {
+            id: 1,
+            token: "eth",
+            chain: "eth",
+            tokenName: "ETH",
+            chainName: "Oasis",
+            tokenLogoUrl: "/assets/usdc.png",
+            chainLogoUrl: "/assets/oasis-logo.png",
+          },
+        ];
 
   const { assets, isAssetsLoading } = useUser();
   const { contract } = useWeb3();
@@ -121,30 +121,30 @@ export function Transfer() {
   const [selectedToken, setSelectedToken] = useState(null);
   const [selectedChain, setSelectedChain] = useState(null);
   const [openSuccess, setOpenSuccess] = useState(false);
-  const [destination, setDestination] = useState("0x278A2d5B5C8696882d1D2002cE107efc74704ECf");
+  const [destination, setDestination] = useState("");
   const [maxBalance, setMaxBalance] = useState(0);
 
   const [balances, setBalances] = useState(
     type === "private"
       ? [
-        {
-          tokenName: "USDC",
-          chainName: "Oasis",
-          balance: 3000,
-        },
-      ]
+          {
+            tokenName: "USDC",
+            chainName: "Oasis",
+            balance: 3000,
+          },
+        ]
       : [
-        {
-          tokenName: "USDC",
-          chainName: "BSC",
-          balance: 1000,
-        },
-        {
-          tokenName: "USDC",
-          chainName: "Ethereum",
-          balance: 2000,
-        },
-      ]
+          {
+            tokenName: "USDC",
+            chainName: "BSC",
+            balance: 1000,
+          },
+          {
+            tokenName: "USDC",
+            chainName: "Ethereum",
+            balance: 2000,
+          },
+        ]
   );
 
   const navigate = useNavigate();
@@ -248,7 +248,7 @@ export function Transfer() {
           tokenAddress: "",
           tokenDecimals: 18,
           destinationAddress: destination,
-        }
+        };
       } else {
         // Handle ERC20 tokens
         transferData = {
@@ -257,8 +257,8 @@ export function Transfer() {
           isNative: false,
           tokenAddress: selectedToken.tokenAddress,
           tokenDecimals: selectedToken.decimals,
-          destinationAddress: destination
-        }
+          destinationAddress: destination,
+        };
       }
 
       console.log("Transfer data:", transferData);
@@ -293,10 +293,16 @@ export function Transfer() {
 
         // Convert asset amount directly to BN with the token's decimals
         const assetAmount = toBN(asset.amount, transferData.tokenDecimals);
-        console.log(`Processing asset with amount: ${assetAmount.toString()} and address: ${asset.address}`);
+        console.log(
+          `Processing asset with amount: ${assetAmount.toString()} and address: ${
+            asset.address
+          }`
+        );
 
         // Calculate the amount to withdraw
-        const withdrawAmount = unitAmount.lt(assetAmount) ? unitAmount : assetAmount;
+        const withdrawAmount = unitAmount.lt(assetAmount)
+          ? unitAmount
+          : assetAmount;
         unitAmount = unitAmount.sub(withdrawAmount);
 
         console.log(`Withdraw Amount: ${withdrawAmount.toString()}`);
@@ -327,7 +333,9 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.testnet.find((chain) => chain.id === transferData.chainId);
+      const network = CHAINS.testnet.find(
+        (chain) => chain.id === transferData.chainId
+      );
       console.log("Network:", network);
 
       if (!network) {
@@ -556,7 +564,9 @@ export function Transfer() {
                   >
                     {selectedToken ? (
                       <div className="flex flex-col items-start text-start">
-                        <p>{selectedToken.nativeToken.name}</p>
+                        <p className="text-sm">
+                          {selectedToken.nativeToken.name}
+                        </p>
                         <p className="text-[10px] text-neutral-400">
                           {selectedToken.chainName}
                         </p>
@@ -585,7 +595,7 @@ export function Transfer() {
               </h1>
 
               <div className="relative flex flex-row gap-2 items-center justify-between w-full">
-                <div className="flex gap-2">
+                <div className="flex gap-3 items-center">
                   {
                     <div className="size-6">
                       <img
@@ -604,7 +614,7 @@ export function Transfer() {
                   }
                   <p
                     className={cnm(
-                      "font-medium",
+                      "font-medium text-sm text-start",
                       selectedChain ? "text-neutral-600" : "text-neutral-300"
                     )}
                   >
@@ -619,19 +629,21 @@ export function Transfer() {
           <div className="flex flex-col w-full gap-0.5">
             <h1 className="text-sm text-[#A1A1A3]">Amount</h1>
 
-            <div className="mt-1 flex items-center justify-between h-16 w-full rounded-[16px] border-[2px] border-[#E4E4E4] px-6">
+            <div className="mt-1 flex items-center justify-between h-16 w-full rounded-[16px] border-[2px] border-[#E4E4E4]">
               <input
-                className="py-2 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 py-2 px-4 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={amount}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="0.00"
               />
 
-              <div className="flex gap-4">
-                <div className="flex flex-col items-end justify-center text-end">
+              <div className="flex relative">
+                <div className="flex flex-col items-end justify-center text-end right-16 pr-2 absolute h-full top-0 pointer-events-none">
                   <p className="text-xs text-[#A1A1A3]">Balance</p>
-                  <p className="text-[#A1A1A3] text-sm">{maxBalance}</p>
+                  <p className="text-[#A1A1A3] text-xs whitespace-nowrap">
+                    {maxBalance} {selectedToken?.nativeToken?.symbol || ""}
+                  </p>
                 </div>
 
                 <div className="h-16 w-[2px] bg-[#E4E4E4]" />
@@ -640,7 +652,7 @@ export function Transfer() {
                   onClick={() => {
                     setAmount(maxBalance);
                   }}
-                  className=" text-[#563EEA] font-bold text-sm"
+                  className=" text-[#563EEA] font-bold text-sm flex items-center justify-center w-14"
                 >
                   Max
                 </button>
@@ -693,7 +705,9 @@ export function Transfer() {
         <Button
           onClick={handleTransfer}
           isLoading={isTransferring}
-          isDisabled={!selectedToken || !selectedChain || !amount || !destination}
+          isDisabled={
+            !selectedToken || !selectedChain || !amount || !destination
+          }
           className="h-16 mt-[10vh] md:mt-[15vh] bg-[#563EEA] w-full rounded-[42px] font-bold text-white"
         >
           {isTransferring ? "Transferring your funds..." : "Transfer"}
