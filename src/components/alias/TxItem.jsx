@@ -32,9 +32,9 @@ export default function TxItem({
         />
       </div>
 
-      <div className="flex items-start justify-between w-full">
+      <div className="flex items-start justify-between w-full gap-3">
         <div className="flex flex-col">
-          <h1 className="font-bold text-[#161618]">{title}</h1>
+          <h1 className="font-bold text-[#161618] break-all">{title}</h1>
           {subtitle && (
             <p className="font-medium text-[#A1A1A3] text-sm">{subtitle}</p>
           )}

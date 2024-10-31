@@ -65,7 +65,10 @@ export default function TokenSelectionDialog({
                     subtitle={token.chainName}
                     value={formatCurrency(
                       parseFloat(token.balance.toFixed(5)),
-                      token.nativeToken.symbol
+                      token.nativeToken.symbol,
+                      "de",
+                      false,
+                      { significantFigures: 5 }
                     )}
                     subValue={formatCurrency(
                       token.priceUSD,
@@ -105,7 +108,9 @@ export default function TokenSelectionDialog({
                     value={formatCurrency(
                       parseFloat(token.balance.toFixed(5)),
                       token.token.symbol,
-                      "de"
+                      "de",
+                      false,
+                      { significantFigures: 5 }
                     )}
                     subValue={formatCurrency(
                       token.priceUSD,

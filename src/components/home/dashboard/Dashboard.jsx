@@ -364,7 +364,9 @@ function BalanceMode({ mode }) {
               "left-6 top-2"
             )}
           >
-            {formatCurrency(assets.totalBalanceUSD, 'usd')}
+            {formatCurrency(assets.totalBalanceUSD, "USD", "en", false, {
+              significantFigures: 5,
+            })}
           </p>
         )}
       </div>
@@ -383,7 +385,8 @@ function BalanceMode({ mode }) {
         <Button
           onClick={() => {
             navigate(
-              `/${userData.username}.squidl.me/transfer?type=${mode === "private" ? "private" : "main"
+              `/${userData.username}.squidl.me/transfer?type=${
+                mode === "private" ? "private" : "main"
               }`
             );
           }}
