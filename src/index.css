@@ -41,6 +41,10 @@
   body {
     @apply font-athletics light;
   }
+
+  html{
+    @apply text-[12px] md:text-[14px] xl:text-[16px]
+  }
 }
 
 @layer components {

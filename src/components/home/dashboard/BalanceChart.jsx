@@ -44,15 +44,15 @@ export default function BalanceChart() {
         >
           <defs>
             <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#7b61ff" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#7b61ff" stopOpacity={0} />
+              <stop offset="5%" stopColor="#1816ff" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="#1816ff" stopOpacity={0} />
             </linearGradient>
           </defs>
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
             dataKey="balance"
-            stroke="#7b61ff"
+            stroke="#1816ff"
             fill="url(#balanceGradient)"
             fillOpacity={1}
           />
@@ -69,7 +69,7 @@ const CustomTooltip = ({ active, payload }) => {
 
     return (
       <div className="bg-white border rounded-2xl p-4 max-w-xl flex flex-col items-start">
-        <p className="bg-purply-50 text-purply px-3 py-2 rounded-xl text-xs">
+        <p className="bg-primary-50 text-primary px-3 py-2 rounded-xl text-xs">
           {date}
         </p>
         <p className="mt-4 text-lg font-medium">${balance.toFixed(2)}</p>

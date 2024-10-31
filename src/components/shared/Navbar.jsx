@@ -7,12 +7,12 @@ export default function Navbar() {
 
   return (
     <div className="fixed z-50 bottom-0 left-0 w-full py-5 flex items-center justify-center">
-      <div className="bg-neutral-100 rounded-full p-1 flex text-sm gap-2 font-medium">
+      <div className="bg-light-white shadow-xl shadow-black/10 border border-black/20 rounded-full p-1 flex text-sm gap-2 font-medium">
         <Link
           to={"/"}
           className={cnm(
             "px-3 py-2 rounded-full flex items-center gap-1 transition-all duration-300",
-            `${location.pathname == "/" ? "bg-[#563EEA] text-white" : ""}`
+            `${location.pathname == "/" ? "bg-primary text-white" : ""}`
           )}
         >
           <LayoutDashboard className="size-3" />
@@ -25,7 +25,7 @@ export default function Navbar() {
             "px-3 py-2 rounded-full flex items-center gap-1 transition-all duration-300",
             `${
               location.pathname == "/payment-links"
-                ? "bg-[#563EEA] text-white"
+                ? "bg-primary text-white"
                 : ""
             }`
           )}
@@ -39,7 +39,7 @@ export default function Navbar() {
             "px-3 py-2 rounded-full flex items-center gap-1 transition-all duration-300",
             `${
               location.pathname == "/transactions"
-                ? "bg-[#563EEA] text-white"
+                ? "bg-primary text-white"
                 : ""
             }`
           )}

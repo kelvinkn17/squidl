@@ -201,7 +201,7 @@ function StepOne({ setStep }) {
             mainWrapper: "rounded-2xl",
             inputWrapper: "h-16",
             input:
-              "focus-visible:outline-purply text-base placeholder:text-neutral-300",
+              "focus-visible:outline-primary text-base placeholder:text-neutral-300",
           }}
           value={username}
           onChange={(e) => {
@@ -217,7 +217,7 @@ function StepOne({ setStep }) {
         onClick={handleUpdate}
         loading={loading || isCheckingUsername}
         isDisabled={loading || !isUsernameAvailable || isCheckingUsername}
-        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-purply-600"
+        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-primary-600"
       >
         Continue
       </Button>
@@ -251,7 +251,7 @@ function StepTwo({ setOpen }) {
         to start receiving payments like a pro
       </p>
       {/* Card */}
-      <div className="w-full rounded-2xl bg-purply-600 h-[221px] mt-5 flex flex-col overflow-hidden relative">
+      <div className="w-full rounded-2xl bg-primary-600 h-[221px] mt-5 flex flex-col overflow-hidden relative">
         <div className="w-full flex items-center justify-end px-6 py-5 text-white">
           {isLoading ? (
             <Skeleton className="w-24 h-8 rounded-md" />
@@ -259,9 +259,9 @@ function StepTwo({ setOpen }) {
             <p className="text-xl">{user?.username}.squidl.me</p>
           )}
         </div>
-        <div className="bg-purply-50 flex-1 flex flex-col justify-end">
+        <div className="bg-primary-50 flex-1 flex flex-col justify-end">
           <div className="w-full flex items-end justify-between py-5 px-6">
-            <p className="text-purply-600 text-2xl font-medium">SQUIDL</p>
+            <p className="text-primary-600 text-2xl font-medium">SQUIDL</p>
             <SquidlLogo className="w-14" />
           </div>
         </div>
@@ -278,7 +278,7 @@ function StepTwo({ setOpen }) {
             text: `${user?.username}.squidl.me`,
           });
         }}
-        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-purply-600"
+        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-primary-600"
       >
         Start Sharing
       </Button>
@@ -287,7 +287,7 @@ function StepTwo({ setOpen }) {
           setOpen(false);
           navigate("/");
         }}
-        className="h-16 rounded-full bg-transparent flex items-center justify-center w-full mt-1 text-purply-600"
+        className="h-16 rounded-full bg-transparent flex items-center justify-center w-full mt-1 text-primary-600"
       >
         Go to dashboard
       </Button>

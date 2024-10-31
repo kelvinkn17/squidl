@@ -88,16 +88,16 @@ export function Transfer() {
         supportedChain.fromChainId === selectedToken.chainId &&
         selectedToken.address &&
         supportedChain.fromToken.toLowerCase() ===
-        selectedToken.address.toLowerCase()
+          selectedToken.address.toLowerCase()
     );
 
     // If Sapphire is supported, return both chain with id 23294 and selectedToken's chainId
     return isSapphireSupported
       ? [
-        ...CHAINS.filter(
-          (chain) => chain.id === 23294 || chain.id === selectedToken.chainId
-        ),
-      ]
+          ...CHAINS.filter(
+            (chain) => chain.id === 23294 || chain.id === selectedToken.chainId
+          ),
+        ]
       : [...CHAINS.filter((chain) => chain.id === selectedToken.chainId)];
   };
 
@@ -230,7 +230,9 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.find((chain) => chain.id === selectedToken.chainId);
+      const network = CHAINS.find(
+        (chain) => chain.id === selectedToken.chainId
+      );
       if (!network) {
         throw new Error("Network not found");
       }
@@ -239,9 +241,9 @@ export function Transfer() {
       const provider = new JsonRpcProvider(network.rpcUrl);
 
       let gasPrice;
-      if(selectedToken.chainId === 23294 || selectedToken.chainId === 23295) {
+      if (selectedToken.chainId === 23294 || selectedToken.chainId === 23295) {
         gasPrice = ethers.parseUnits("100", "gwei");
-      }else{
+      } else {
         gasPrice = ethers.parseUnits("20", "gwei");
       }
 
@@ -263,10 +265,18 @@ export function Transfer() {
               );
 
             if (stealthAddress !== queue.address) {
-              console.error("Stealth address mismatch:", stealthAddress, queue.address);
+              console.error(
+                "Stealth address mismatch:",
+                stealthAddress,
+                queue.address
+              );
               throw new Error("Stealth address mismatch");
             } else {
-              console.log("Stealth address match:", stealthAddress, queue.address);
+              console.log(
+                "Stealth address match:",
+                stealthAddress,
+                queue.address
+              );
             }
 
             queue.stealthKey = stealthKey;
@@ -276,7 +286,7 @@ export function Transfer() {
             console.log("Stealth Signer:", {
               address: stealthSigner.address,
               privateKey: stealthSigner.privateKey,
-            })
+            });
 
             // Handle the native asset (ETH)
             let txData;
@@ -392,7 +402,11 @@ export function Transfer() {
             );
 
           if (stealthAddress !== queue.address) {
-            console.error("Stealth address mismatch:", stealthAddress, queue.address);
+            console.error(
+              "Stealth address mismatch:",
+              stealthAddress,
+              queue.address
+            );
             throw new Error("Stealth address mismatch");
           }
 
@@ -403,7 +417,7 @@ export function Transfer() {
           console.log("Stealth Signer:", {
             address: stealthSigner.address,
             privateKey: stealthSigner.privateKey,
-          })
+          });
 
           const formattedAmount = parseFloat(
             ethers.formatUnits(queue.amount, transferData.tokenDecimals)
@@ -478,7 +492,7 @@ export function Transfer() {
       />
       <div
         className={
-          "relative flex flex-col w-full max-w-md items-start justify-center bg-[#F9F9FA] rounded-[32px] p-4 md:p-6"
+          "relative flex flex-col w-full max-w-md items-start justify-center bg-light-white rounded-[32px] p-4 md:p-6"
         }
       >
         <TokenSelectionDialog
@@ -514,7 +528,7 @@ export function Transfer() {
         {/* Transfer */}
 
         <div className="flex flex-col gap-3 w-full mt-12">
-          <div className="relative flex border-[2px] gap-4 border-[#E4E4E4] rounded-[16px]">
+          <div className="relative flex border-[2px] gap-4 bg-white border-[#E4E4E4] rounded-[16px]">
             {/* Token */}
 
             <button
@@ -591,13 +605,13 @@ export function Transfer() {
             <button
               onClick={() => setOpenChainDialog(true)}
               disabled={!selectedToken}
-              className="relative flex flex-col md:flex-row items-start md:items-center justify-between pr-4 py-5 w-full"
+              className="relative flex flex-col  md:flex-row items-start md:items-center justify-between pr-4 py-5 w-full"
             >
               <h1 className="absolute left-0 -top-7 text-sm text-[#A1A1A3]">
                 Chain
               </h1>
 
-              <div className="relative flex flex-row gap-2 items-center justify-between w-full">
+              <div className="relative  flex flex-row gap-2 items-center justify-between w-full">
                 <div className="flex gap-3 items-center">
                   {
                     <div className="size-6">
@@ -632,7 +646,7 @@ export function Transfer() {
           <div className="flex flex-col w-full gap-0.5">
             <h1 className="text-sm text-[#A1A1A3]">Amount</h1>
 
-            <div className="mt-1 flex items-center justify-between h-16 w-full rounded-[16px] border-[2px] border-[#E4E4E4]">
+            <div className="mt-1 flex items-center justify-between bg-white h-16 w-full rounded-[16px] border-[2px] border-[#E4E4E4]">
               <input
                 className="flex-1 py-2 px-4 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={amount}
@@ -645,7 +659,7 @@ export function Transfer() {
                 <div className="flex flex-col items-end justify-center text-end right-16 pr-2 absolute h-full top-0 pointer-events-none">
                   <p className="text-xs text-[#A1A1A3]">Balance</p>
                   <p className="text-[#A1A1A3] text-sm">
-                    {formatCurrency(parseFloat(maxBalance.toFixed(5)), '')}
+                    {formatCurrency(parseFloat(maxBalance.toFixed(5)), "")}
                   </p>
                 </div>
 
@@ -671,7 +685,7 @@ export function Transfer() {
           {type === "main" ? (
             <div className="flex flex-col gap-2">
               <input
-                className="h-16 w-full rounded-[16px] border-[2px] border-[#E4E4E4] px-6 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-16 w-full bg-white rounded-[16px] border-[2px] border-[#E4E4E4] px-6 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
                 value={destination}
                 onChange={(e) => {
                   const val = e.target.value;
@@ -684,7 +698,7 @@ export function Transfer() {
 
           {/* if Oasis is destination */}
           {isPrivate && (
-            <div className="flex flex-col bg-[#2127FF] p-0.5 rounded-[16px]">
+            <div className="flex flex-col bg-oasis-blue p-0.5 rounded-[16px]">
               <div className="flex items-center justify-between gap-4 bg-[#EEEEFF] px-4 py-5 rounded-[14px]">
                 <p className="font-medium text-[#161618]">
                   Your Oasis Private wallet
@@ -712,7 +726,7 @@ export function Transfer() {
           isDisabled={
             !selectedToken || !selectedChain || !amount || !destination
           }
-          className="h-16 mt-[10vh] md:mt-[15vh] bg-[#563EEA] w-full rounded-[42px] font-bold text-white"
+          className="h-16 mt-[10vh] md:mt-[15vh] bg-primary w-full rounded-[42px] font-bold text-white"
         >
           {isTransferring ? "Transferring your funds..." : "Transfer"}
         </Button>

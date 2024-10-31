@@ -133,7 +133,7 @@ export default function AliasDetail() {
             duration: 0.6,
           },
         }}
-        className="absolute inset-0 bg-[#F9F9FA] "
+        className="absolute inset-0 bg-light-white "
       />
 
       <motion.div
@@ -280,18 +280,18 @@ export default function AliasDetail() {
             onClick={() => {
               mutateAliasData();
             }}
-            className="bg-[#E9ECFC] rounded-full p-3"
+            className="bg-light rounded-full p-3"
           >
-            <Icons.refresh className="text-[#563EEA] size-6" />
+            <Icons.refresh className="text-primary size-6" />
           </button>
 
           <button
             onClick={() => {
               onCopy(aliasDetailData?.stealthAddress?.address);
             }}
-            className="bg-[#E9ECFC] rounded-full p-3"
+            className="bg-light rounded-full p-3"
           >
-            <Icons.copy className="text-[#563EEA] size-6" />
+            <Icons.copy className="text-primary size-6" />
           </button>
         </div>
       </motion.div>

@@ -21,7 +21,7 @@ export default function PaymentHeader() {
       <div className="flex flex-row items-center gap-12">
         <Link to={"/"} className="w-24">
           <img
-            src="/assets/squidl-logo.png"
+            src="/assets/squidl-logo.svg"
             alt="squidl-logo"
             className="w-full h-full object-contain"
           />
@@ -37,7 +37,7 @@ export default function PaymentHeader() {
               navigate("/");
             }
           }}
-          className={"bg-[#563EEA] h-12 rounded-[24px] px-4"}
+          className={"bg-primary h-12 rounded-[24px] px-4"}
         >
           <Icons.link className="text-white" />
           <h1 className={"text-sm font-medium text-white"}>

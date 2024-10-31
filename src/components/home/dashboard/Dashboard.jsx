@@ -125,13 +125,13 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
   };
 
   return (
-    <div className="bg-purply p-4 rounded-3xl text-white w-full">
+    <div className="bg-primary-600 p-4 rounded-3xl text-white w-full">
       <div className="w-full flex items-center justify-between">
         <p className="text-xl">Receive</p>
-        <div className="bg-purply-800 rounded-full flex relative items-center font-medium px-1 py-1">
+        <div className="bg-white rounded-full flex relative items-center font-medium px-1 py-1">
           <div
             className={cnm(
-              "w-24 h-10 bg-purply-600 absolute left-1 rounded-full transition-transform ease-in-out",
+              "w-24 h-10 bg-primary-500 absolute left-1 rounded-full transition-transform ease-in-out",
               mode === "ens" ? "translate-x-0" : "translate-x-full"
             )}
           ></div>
@@ -141,7 +141,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
             }}
             className={cnm(
               "w-24 h-10 rounded-full flex items-center justify-center relative transition-colors",
-              mode === "ens" ? "text-white" : "text-purply-500"
+              mode === "ens" ? "text-white" : "text-primary"
             )}
           >
             ENS
@@ -152,7 +152,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
             }}
             className={cnm(
               "w-24 h-8 rounded-full flex items-center justify-center relative transition-colors",
-              mode === "address" ? "text-white" : "text-purply-500"
+              mode === "address" ? "text-white" : "text-primary"
             )}
           >
             Address
@@ -181,21 +181,21 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
           {mode === "address" ? (
             <button
               onClick={() => mutateAliasData()}
-              className="bg-purply-50 size-9 rounded-full flex items-center justify-center"
+              className="bg-primary-50 size-9 rounded-full flex items-center justify-center"
             >
-              <Icons.refresh className="text-[#563EEA] size-5" />
+              <Icons.refresh className="text-primary size-5" />
             </button>
           ) : (
             <button
               onClick={() => setOpenQr(true)}
-              className="bg-purply-50 size-9 rounded-full flex items-center justify-center"
+              className="bg-primary-50 size-9 rounded-full flex items-center justify-center"
             >
               <QrCodeIcon className="size-5" />
             </button>
           )}
           <button
             onClick={onCopy}
-            className="bg-purply-50 size-9 rounded-full flex items-center justify-center"
+            className="bg-primary-50 size-9 rounded-full flex items-center justify-center"
           >
             <CopyIcon className="size-5" />
           </button>
@@ -348,7 +348,7 @@ function BalanceMode({ mode }) {
           className={cnm(
             " flex-1 rounded-full h-14",
             mode === "available"
-              ? "bg-purply-50 text-purply"
+              ? "bg-primary-50 text-primary"
               : "bg-oasis-blue/10 text-oasis-blue"
           )}
         >
@@ -365,7 +365,7 @@ function BalanceMode({ mode }) {
           className={cnm(
             " flex-1 rounded-full h-14",
             mode === "available"
-              ? "bg-purply text-white"
+              ? "bg-primary text-white"
               : "bg-oasis-blue text-white"
           )}
         >

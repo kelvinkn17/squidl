@@ -52,18 +52,7 @@ export default function Transactions() {
   }, [mutateTransactionsData]);
 
   return (
-    <div
-      className={
-        "relative flex flex-col gap-2 w-full max-w-md items-start justify-center bg-[#F9F9FA] rounded-[32px] p-4 md:p-6"
-      }
-    >
-      <div className="flex items-center justify-between w-full">
-        <h1 className="font-bold text-lg text-[#19191B]">Transactions</h1>
-        <div className="size-10 p-2 bg-white rounded-full flex items-center justify-center">
-          <Icons.allChain className="text-black" />
-        </div>
-      </div>
-
+    <div className={"relative flex h-full w-full"}>
       {isLoadingTransactionsData ? (
         <Spinner
           size="md"

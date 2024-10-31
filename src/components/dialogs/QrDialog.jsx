@@ -76,7 +76,7 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
         </button>
 
         <img
-          src="/assets/squidl-logo.png"
+          src="/assets/squidl-logo.svg"
           alt="logo"
           className="object-contain w-auto h-10"
         />
@@ -84,14 +84,8 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
         <h1 className="font-medium text-xl text-[#19191B]">Your QR Code</h1>
 
         <div className="px-5 md:px-12">
-          <div className="bg-[#563EEA] rounded-[24px] px-5 py-4 flex flex-col items-center justify-center w-full">
+          <div className="bg-primary-600 rounded-[24px] px-5 py-4 flex flex-col items-center justify-center w-full">
             <div className="w-full h-full bg-white p-5 rounded-[24px]">
-              {/* <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/QR_Code_Example.svg/1200px-QR_Code_Example.svg.png"
-                alt="qr"
-                className="w-full h-full object-contain"
-              /> */}
-
               <QRCode
                 ref={qrRef}
                 value={`${user?.username}.squidl.me`}
@@ -111,7 +105,7 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
                 {user?.username}.squidl.me
               </h1>
               <button onClick={() => onCopy("link")}>
-                <Icons.copy className="text-[#B9BCFF]" />
+                <Icons.copy className="text-primary-200" />
               </button>
             </div>
           </div>
@@ -122,13 +116,13 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
         <div className="flex w-full items-center gap-4 mt-2">
           <Button
             onClick={handleDownload}
-            className="bg-[#563EEA] rounded-4xl h-14 text-white text-sm w-full"
+            className="bg-primary rounded-4xl h-14 text-white text-sm w-full"
           >
             Download
           </Button>
           <Button
             onClick={handleShare}
-            className="bg-[#E9ECFC] rounded-4xl h-14 text-[#563EEA] text-sm w-full"
+            className="bg-light rounded-4xl h-14 text-primary text-sm w-full"
           >
             Share
           </Button>

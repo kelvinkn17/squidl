@@ -97,7 +97,7 @@ export default function Payment() {
       >
         <div className="w-36">
           <img
-            src="/assets/squidl-logo.png"
+            src="/assets/squidl-logo.svg"
             alt="squidl-logo"
             className="w-full h-full object-contain"
           />
@@ -123,7 +123,7 @@ export default function Payment() {
 
           {/* Success State */}
           {!isLoadingAliasData && aliasData && !isAliasDataError && (
-            <div className="bg-[#F9F9FA] rounded-[32px] py-9 px-10 md:px-20 flex flex-col items-center justify-center w-full h-full">
+            <div className="bg-light-white rounded-[32px] py-9 px-10 md:px-20 flex flex-col items-center justify-center w-full h-full">
               <h1 className="font-medium text-xl">
                 Send to{" "}
                 <span className="font-semibold text-primary">
@@ -133,7 +133,7 @@ export default function Payment() {
 
               <Chains />
 
-              <div className="bg-[#563EEA] rounded-3xl mt-7 p-5 flex flex-col items-center justify-center gap-4 w-full">
+              <div className="bg-primary rounded-3xl mt-7 p-5 flex flex-col items-center justify-center gap-4 w-full">
                 <div className="w-full bg-white overflow-hidden p-1 rounded-xl">
                   <QRCode
                     value={aliasData.stealthAddress.address}
@@ -153,7 +153,7 @@ export default function Payment() {
                     {aliasData.stealthAddress.ens}
                   </h1>
                   <button onClick={() => onCopy(aliasData.stealthAddress.ens)}>
-                    <Icons.copy className="text-[#B9BCFF]" />
+                    <Icons.copy className="text-primary-200" />
                   </button>
                 </div>
               </div>
@@ -166,9 +166,9 @@ export default function Payment() {
                   </h1>
                   <button
                     onClick={() => onCopy(aliasData.stealthAddress.address)}
-                    className="flex p-3 bg-[#E9ECFC] rounded-full m-1"
+                    className="flex p-3 bg-light rounded-full m-1"
                   >
-                    <Icons.copy className="text-[#563EEA] size-6" />
+                    <Icons.copy className="text-primary size-6" />
                   </button>
                 </div>
 
@@ -178,14 +178,14 @@ export default function Payment() {
                 {isLoggedIn ? (
                   <Button
                     onClick={() => setOpenOnramp(true)}
-                    className="bg-[#563EEA] text-[#F4F4F4] font-bold py-5 px-6 h-16 w-full rounded-[32px]"
+                    className="bg-primary text-[#F4F4F4] font-bold py-5 px-6 h-16 w-full rounded-[32px]"
                   >
                     Pay with Credit Card
                   </Button>
                 ) : (
                   <Button
                     onClick={() => setShowAuthFlow(true)}
-                    className="bg-[#563EEA] text-[#F4F4F4] font-bold py-5 px-6 h-16 w-full rounded-[32px]"
+                    className="bg-primary text-[#F4F4F4] font-bold py-5 px-6 h-16 w-full rounded-[32px]"
                   >
                     Log in to pay with a credit card
                   </Button>
