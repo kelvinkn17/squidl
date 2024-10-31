@@ -326,7 +326,7 @@ export default function Experimental() {
           await contract.computeStealthKey.staticCall(
             authSigner,
             metaAddress,
-            1,
+            2,
             queue.ephemeralPub
           );
 

@@ -145,7 +145,7 @@ export default function Payment() {
                   <h1 className="font-medium text-lg text-[#F4F4F4]">
                     {aliasData.stealthAddress.ens}
                   </h1>
-                  <button onClick={() => onCopy(`james.squidl.me`)}>
+                  <button onClick={() => onCopy(aliasData.stealthAddress.ens)}>
                     <Icons.copy className="text-[#B9BCFF]" />
                   </button>
                 </div>

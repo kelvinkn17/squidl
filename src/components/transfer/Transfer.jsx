@@ -208,6 +208,7 @@ export function Transfer() {
           ...queue,
           {
             address: asset.address,
+            key: asset.key,
             ephemeralPub: asset.ephemeralPub,
             amount: withdrawAmount.toString(), // Convert back to string if needed
           },
@@ -237,6 +238,16 @@ export function Transfer() {
 
       const provider = new JsonRpcProvider(network.rpcUrl);
 
+      let gasPrice;
+      if(selectedToken.chainId === 23294 || selectedToken.chainId === 23295) {
+        gasPrice = ethers.parseUnits("100", "gwei");
+      }else{
+        gasPrice = ethers.parseUnits("20", "gwei");
+      }
+
+      console.log("Gas Price:", gasPrice.toString());
+
+      // Get gas price
       // Handle the same chain transfer
       if (isDifferentChain === false) {
         const transactions = [];
@@ -247,9 +258,16 @@ export function Transfer() {
               await contract.computeStealthKey.staticCall(
                 authSigner,
                 transferData.userMetaAddress,
-                1,
+                queue.key,
                 queue.ephemeralPub
               );
+
+            if (stealthAddress !== queue.address) {
+              console.error("Stealth address mismatch:", stealthAddress, queue.address);
+              throw new Error("Stealth address mismatch");
+            } else {
+              console.log("Stealth address match:", stealthAddress, queue.address);
+            }
 
             queue.stealthKey = stealthKey;
 
@@ -272,7 +290,7 @@ export function Transfer() {
                 value: queue.amount,
                 chainId: network.id,
                 nonce: await stealthSigner.getNonce(),
-                gasPrice: ethers.parseUnits("20", "gwei"),
+                gasPrice: gasPrice,
               };
             } else {
               const tokenContract = new ethers.Contract(
@@ -290,7 +308,8 @@ export function Transfer() {
               txData.from = stealthSigner.address;
               txData.chainId = network.id;
               txData.nonce = await stealthSigner.getNonce();
-              txData.gasPrice = ethers.parseUnits("20", "gwei");
+
+              txData.gasPrice = gasPrice;
             }
 
             // Estimate gas limit for the transaction
@@ -337,6 +356,7 @@ export function Transfer() {
           console.log("All transactions confirmed:", txReceipts);
         } catch (error) {
           console.error("Error sending or confirming transactions:", error);
+          throw new Error("Error sending or confirming transactions");
         }
 
         const successData = {
@@ -367,9 +387,14 @@ export function Transfer() {
             await contract.computeStealthKey.staticCall(
               authSigner,
               transferData.userMetaAddress,
-              1,
+              queue.key,
               queue.ephemeralPub
             );
+
+          if (stealthAddress !== queue.address) {
+            console.error("Stealth address mismatch:", stealthAddress, queue.address);
+            throw new Error("Stealth address mismatch");
+          }
 
           queue.stealthKey = stealthKey;
 
@@ -379,7 +404,7 @@ export function Transfer() {
             address: stealthSigner.address,
             privateKey: stealthSigner.privateKey,
           })
-          
+
           const formattedAmount = parseFloat(
             ethers.formatUnits(queue.amount, transferData.tokenDecimals)
           );
@@ -620,7 +645,7 @@ export function Transfer() {
                 <div className="flex flex-col items-end justify-center text-end right-16 pr-2 absolute h-full top-0 pointer-events-none">
                   <p className="text-xs text-[#A1A1A3]">Balance</p>
                   <p className="text-[#A1A1A3] text-sm">
-                    {formatCurrency(parseFloat(maxBalance.toFixed(5)), "")}
+                    {formatCurrency(parseFloat(maxBalance.toFixed(5)), '')}
                   </p>
                 </div>
 
