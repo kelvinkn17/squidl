@@ -85,7 +85,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
   const [mode, setMode] = useState("ens");
 
   const { data: aliasDetailData, mutate: mutateAliasData } = useSWR(
-    `/stealth-address/aliases/${user.username}/detail`,
+    `/stealth-address/aliases/${user?.username}/detail`,
     async (url) => {
       try {
         setLoading(true);
@@ -106,7 +106,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
   const onCopy = () => {
     let copyText;
     if (mode === "ens" && user?.username) {
-      copyText = `${user.username}.squidl.me`;
+      copyText = `${user?.username}.squidl.me`;
     } else if (aliasDetailData?.stealthAddress?.address) {
       copyText = aliasDetailData.stealthAddress.address;
     } else {

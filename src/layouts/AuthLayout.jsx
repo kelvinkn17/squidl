@@ -1,8 +1,5 @@
 import { Outlet } from "react-router-dom";
-import {
-  DynamicEmbeddedWidget,
-  useIsLoggedIn,
-} from "@dynamic-labs/sdk-react-core";
+import { DynamicEmbeddedWidget } from "@dynamic-labs/sdk-react-core";
 import AuthProvider from "../providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import Header from "../components/shared/Header";
