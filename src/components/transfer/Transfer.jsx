@@ -57,39 +57,7 @@ export function Transfer() {
   const [isTransferring, setIsTransferring] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [openSuccess, setOpenSuccess] = useState(false);
-  const [successData, setSuccessData] = useState({
-    "type": "PUBLIC_TRANSFER",
-    "amount": 0.001,
-    "chain": {
-      "id": 11155111,
-      "name": "Ethereum Sepolia",
-      "chainlistUrl": "https://chainlist.org/chain/11155111",
-      "rpcUrl": "https://sepolia.infura.io/v3/8b80c39d501f4326971fc930c474a0aa",
-      "nativeToken": "ETH",
-      "blockExplorerUrl": "https://sepolia.etherscan.io/",
-      "imageUrl": "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
-      "isTestnet": true,
-      "network": "testnet"
-    },
-    "token": {
-      "chainId": 11155111,
-      "chainName": "Ethereum Sepolia",
-      "chainLogo": "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
-      "nativeToken": {
-        "name": "Ethereum",
-        "symbol": "ETH",
-        "logo": "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
-        "priceUSD": 3500
-      },
-      "balance": 1.6421890000000001,
-      "priceUSD": 5747.661500000001
-    },
-    "destinationAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
-    "chainId": 11155111,
-    "txHashes": [
-      "0x50d2cd0675e24b7ab791789b8d088cb62c6e63c91bd23a93809b7be932d99045"
-    ]
-  });
+  const [successData, setSuccessData] = useState();
 
   // If the user is transferring to Oasis (23294), set isPrivate to true
   useEffect(() => {

@@ -336,12 +336,12 @@ export default function AliasDetail() {
                 return (
                   <AssetItem
                     key={idx}
-                    logoImg={item.nativeToken.logo}
+                    logoImg={item?.nativeToken ? item.nativeToken.logo : item.token.logo}
                     balance={item.balance}
                     chainName={item.chainName}
                     chainLogo={item.chainLogo}
                     priceUSD={item.priceUSD}
-                    tokenSymbol={item.nativeToken.symbol}
+                    tokenSymbol={item?.nativeToken ? item.nativeToken.symbol : item.token.symbol}
                   />
                 );
               })}
