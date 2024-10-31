@@ -86,12 +86,6 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
         <div className="px-5 md:px-12">
           <div className="bg-[#563EEA] rounded-[24px] px-5 py-4 flex flex-col items-center justify-center w-full">
             <div className="w-full h-full bg-white p-5 rounded-[24px]">
-              {/* <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/QR_Code_Example.svg/1200px-QR_Code_Example.svg.png"
-                alt="qr"
-                className="w-full h-full object-contain"
-              /> */}
-
               <QRCode
                 ref={qrRef}
                 value={`${user?.username}.squidl.me`}
@@ -110,7 +104,7 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
               <h1 className="font-medium text-lg text-[#F4F4F4]">
                 {user?.username}.squidl.me
               </h1>
-              <button onClick={() => onCopy("link")}>
+              <button onClick={() => onCopy(`${user?.username}.squidl.me`)}>
                 <Icons.copy className="text-[#B9BCFF]" />
               </button>
             </div>
