@@ -478,7 +478,7 @@ export function Transfer() {
       />
       <div
         className={
-          "relative flex flex-col w-full max-w-md items-start justify-center bg-[#F9F9FA] rounded-[32px] p-4 md:p-6"
+          "relative flex flex-col w-full max-w-md items-start justify-center bg-light-white rounded-[32px] p-4 md:p-6"
         }
       >
         <TokenSelectionDialog
@@ -684,7 +684,7 @@ export function Transfer() {
 
           {/* if Oasis is destination */}
           {isPrivate && (
-            <div className="flex flex-col bg-[#2127FF] p-0.5 rounded-[16px]">
+            <div className="flex flex-col bg-oasis-blue p-0.5 rounded-[16px]">
               <div className="flex items-center justify-between gap-4 bg-[#EEEEFF] px-4 py-5 rounded-[14px]">
                 <p className="font-medium text-[#161618]">
                   Your Oasis Private wallet
@@ -712,7 +712,7 @@ export function Transfer() {
           isDisabled={
             !selectedToken || !selectedChain || !amount || !destination
           }
-          className="h-16 mt-[10vh] md:mt-[15vh] bg-[#563EEA] w-full rounded-[42px] font-bold text-white"
+          className="h-16 mt-[10vh] md:mt-[15vh] bg-primary w-full rounded-[42px] font-bold text-white"
         >
           {isTransferring ? "Transferring your funds..." : "Transfer"}
         </Button>

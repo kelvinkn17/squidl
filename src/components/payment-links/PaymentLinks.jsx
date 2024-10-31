@@ -27,7 +27,7 @@ export default function PaymentLinks() {
   return (
     <div
       className={
-        "relative flex flex-col gap-9 w-full max-w-md items-start justify-center bg-[#F9F9FA] rounded-[32px] pb-6"
+        "relative flex flex-col gap-9 w-full max-w-md items-start justify-center bg-light-white rounded-[32px] pb-6"
       }
     >
       <h1 className="text-[#19191B] font-medium text-lg px-6 pt-6">
@@ -117,7 +117,7 @@ export default function PaymentLinks() {
               onClick={() => {
                 setOpen(true);
               }}
-              className="px-4 py-2 rounded-full bg-purply text-white"
+              className="px-4 py-2 rounded-full bg-primary text-white"
             >
               Create Payment Link
             </Button>

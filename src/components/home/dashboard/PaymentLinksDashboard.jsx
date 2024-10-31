@@ -76,7 +76,7 @@ export default function PaymentLinksDashboard({ user }) {
           onClick={() => {
             navigate("/payment-links");
           }}
-          className="bg-purply-50 rounded-full px-4 text-purply h-10 flex items-center"
+          className="bg-primary-50 rounded-full px-4 text-primary h-10 flex items-center"
         >
           See More
         </Button>
@@ -184,7 +184,7 @@ export default function PaymentLinksDashboard({ user }) {
                 onClick={() => {
                   setOpen(true);
                 }}
-                className="px-4 py-2 rounded-full bg-purply text-white"
+                className="px-4 py-2 rounded-full bg-primary text-white"
               >
                 Create Payment Link
               </Button>

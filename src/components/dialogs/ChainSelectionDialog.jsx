@@ -17,9 +17,9 @@ export default function ChainSelectionDialog({
       initial={{ height: 0 }}
       animate={{ height: open ? "100%" : 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute z-50 bottom-0 left-0 w-full bg-[#F9F9FA] overflow-hidden rounded-[32px] flex flex-col items-center justify-start"
+      className="absolute z-50 bottom-0 left-0 w-full bg-light-white overflow-hidden rounded-[32px] flex flex-col items-center justify-start"
     >
-      <div className="flex flex-col items-center justify-center w-full bg-[#F9F9FA] rounded-[32px] p-6">
+      <div className="flex flex-col items-center justify-center w-full bg-light-white rounded-[32px] p-6">
         <Button
           onClick={() => setOpen(false)}
           className="absolute left-6 top-6 flex items-center gap-1 bg-white rounded-[21px] h-10 pl-3 pr-4"
@@ -91,7 +91,7 @@ function Chain({
           </div>
 
           {isPrivate && (
-            <div className="bg-[#2127FF] h-6 flex items-center justify-center text-white font-bold text-xs px-2.5 rounded-full">
+            <div className="bg-oasis-blue h-6 flex items-center justify-center text-white font-bold text-xs px-2.5 rounded-full">
               Private Transfer
             </div>
           )}

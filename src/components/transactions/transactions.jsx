@@ -54,7 +54,7 @@ export default function Transactions() {
   return (
     <div
       className={
-        "relative flex flex-col gap-2 w-full max-w-md items-start justify-center bg-[#F9F9FA] rounded-[32px] p-4 md:p-6"
+        "relative flex flex-col gap-2 w-full max-w-md items-start justify-center bg-light-white rounded-[32px] p-4 md:p-6"
       }
     >
       <div className="flex items-center justify-between w-full">

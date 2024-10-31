@@ -133,7 +133,7 @@ function StepOne({ setStep, isLoading, user, alias, setAlias }) {
             mainWrapper: "rounded-2xl",
             inputWrapper: "h-16",
             input:
-              "focus-visible:outline-purply text-base placeholder:text-neutral-300",
+              "focus-visible:outline-primary text-base placeholder:text-neutral-300",
           }}
           value={alias}
           onChange={(e) => {
@@ -154,7 +154,7 @@ function StepOne({ setStep, isLoading, user, alias, setAlias }) {
       </div>
       <Button
         onClick={handleUpdate}
-        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-purply-600"
+        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-primary-600"
       >
         Continue
       </Button>
@@ -248,7 +248,7 @@ function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
             text: `${alias}.${user?.username}.squidl.me`,
           });
         }}
-        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-purply-600"
+        className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-primary-600"
       >
         Start Sharing
       </Button>
@@ -258,7 +258,7 @@ function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
           setStep("one");
           navigate("/");
         }}
-        className="h-16 rounded-full bg-transparent flex items-center justify-center w-full mt-1 text-purply-600"
+        className="h-16 rounded-full bg-transparent flex items-center justify-center w-full mt-1 text-primary-600"
       >
         Go to dashboard
       </Button>

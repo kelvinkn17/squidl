@@ -153,14 +153,14 @@ export default function SuccessDialog({
                 {topButtonHandler && (
                   <Button
                     onClick={topButtonHandler}
-                    className="text-[#19191B] font-sm h-14 w-full rounded-4xl bg-[#F9F9FA]"
+                    className="text-[#19191B] font-sm h-14 w-full rounded-4xl bg-light-white"
                   >
                     {topButtonTitle}
                   </Button>
                 )}
                 <Button
                   onClick={botButtonHandler}
-                  className="text-white font-sm h-14 w-full rounded-4xl bg-[#563EEA]"
+                  className="text-white font-sm h-14 w-full rounded-4xl bg-primary"
                 >
                   {botButtonTitle}
                 </Button>
