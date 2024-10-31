@@ -241,7 +241,55 @@ const BRIDGE_CONFIGS = {
         }
       ]
     },
-  }
+  },
+  pegged_pair_configs: [
+    {
+      "org_chain_id": 1,
+      "org_token": {
+        "token": {
+          "symbol": "USDC",
+          "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "decimal": 6,
+          "xfer_disabled": false
+        },
+        "name": "USD Coin",
+        "icon": "https://get.celer.app/cbridge-icons/USDC.png",
+        "inbound_lmt": "",
+        "inbound_epoch_cap": "",
+        "transfer_disabled": false,
+        "liq_add_disabled": false,
+        "liq_rm_disabled": false,
+        "liq_agg_rm_src_disabled": false,
+        "delay_threshold": "",
+        "delay_period": 0
+      },
+      "pegged_chain_id": 23294,
+      "pegged_token": {
+        "token": {
+          "symbol": "USDC",
+          "address": "0x2c2E3812742Ab2DA53a728A09F5DE670Aba584b6",
+          "decimal": 6,
+          "xfer_disabled": false
+        },
+        "name": "USD Coin",
+        "icon": "https://get.celer.app/cbridge-icons/USDC.png",
+        "inbound_lmt": "",
+        "inbound_epoch_cap": "",
+        "transfer_disabled": false,
+        "liq_add_disabled": false,
+        "liq_rm_disabled": false,
+        "liq_agg_rm_src_disabled": false,
+        "delay_threshold": "",
+        "delay_period": 0
+      },
+      "pegged_deposit_contract_addr": "0xB37D31b2A74029B5951a2778F959282E2D518595",
+      "pegged_burn_contract_addr": "0xEF3967C8A80f6090D509f822Cf11C2F2795BE0C8",
+      "canonical_token_contract_addr": "",
+      "vault_version": 0,
+      "bridge_version": 2,
+      "migration_peg_burn_contract_addr": ""
+    }
+  ]
 }
 
 /*
@@ -355,8 +403,6 @@ export async function poolTransfer({
       transferConfigs.pegged_pair_configs
     );
 
-    console.log('bridgeAddress: ', bridgeAddress);
-
     console.log("allowance: ", allowance);
 
     let needToApprove = false;
@@ -379,6 +425,7 @@ export async function poolTransfer({
 
     if (needToApprove) {
       console.log("Approving the tokens");
+
       const approveTx = await approve(
         bridgeAddress || "",
         signer,

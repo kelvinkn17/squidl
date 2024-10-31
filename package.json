@@ -41,7 +41,8 @@
     "react-router-dom": "^6.26.2",
     "recharts": "^2.13.0-alpha.5",
     "swr": "^2.2.5",
-    "tailwind-merge": "^2.5.2"
+    "tailwind-merge": "^2.5.2",
+    "viem": "^2.21.37"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

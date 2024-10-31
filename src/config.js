@@ -134,7 +134,7 @@ export const CHAINS = [
     id: 1,
     name: "Ethereum Mainnet",
     chainlistUrl: "https://chainlist.org/chain/1",
-    rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
+    rpcUrl: `https://mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`,
     nativeToken: "ETH",
     blockExplorerUrl: "https://etherscan.io",
     imageUrl: "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",

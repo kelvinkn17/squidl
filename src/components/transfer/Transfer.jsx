@@ -229,7 +229,7 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.find((chain) => chain.id === selectedChain.id);
+      const network = CHAINS.find((chain) => chain.id === selectedToken.chainId);
       if (!network) {
         throw new Error("Network not found");
       }
