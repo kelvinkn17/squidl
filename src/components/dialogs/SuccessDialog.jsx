@@ -104,15 +104,19 @@ export default function SuccessDialog({
                   Your transfer of
                 </div>
 
-                <div className="flex flex-row items-center gap-2">
-                  <div className="text-lg font-medium">
+                <div className="flex flex-row items-center gap-2 mt-2">
+                  <div className="text-xl font-medium">
                     {successData.amount}
                   </div>
 
                   <div className="flex flex-row items-center gap-1">
-                    <img src={successData.token.token.logo} alt="" className="w-6 h-6 rounded-full" />
-                    <div className="font-medium">
-                      {successData.token.token.symbol}
+                    <img
+                      src={successData.token?.nativeToken ? successData.token.nativeToken.logo : successData.token.token.logo}
+                      alt=""
+                      className="w-6 h-6 -mt-1 rounded-full"
+                    />
+                    <div className="font-medium text-xl">
+                      {successData.token?.nativeToken ? successData.token.nativeToken.symbol : successData.token.token.symbol}
                     </div>
                   </div>
 
@@ -168,12 +172,12 @@ export default function SuccessDialog({
                   className="-translate-y-[4rem] translate-x-[0.4rem]"
                 />
               </div>
-            </div> 
+            </div>
             :
             <div>
               <Spinner color="primary" size="lg" />
             </div>
-        }
+          }
         </ModalContent>
       </Modal>
     </>

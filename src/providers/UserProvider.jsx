@@ -29,8 +29,6 @@ export default function UserProvider({ children }) {
         `/user/wallet-assets/${userData.username}/all-assets`
       );
 
-      console.log("User assets", res.data);
-
       setAssets(res.data);
     } catch (error) {
       console.error("Error fetching user assets", error);

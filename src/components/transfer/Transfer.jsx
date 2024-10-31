@@ -45,13 +45,45 @@ export function Transfer() {
   const [openChainDialog, setOpenChainDialog] = useState(false);
   const [selectedToken, setSelectedToken] = useState(null);
   const [selectedChain, setSelectedChain] = useState(null);
-  const [openSuccess, setOpenSuccess] = useState(false);
   const [destination, setDestination] = useState("0x278A2d5B5C8696882d1D2002cE107efc74704ECf");
   const [maxBalance, setMaxBalance] = useState(0);
   const [error, setError] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [successData, setSuccessData] = useState(null);
+  const [openSuccess, setOpenSuccess] = useState(true);
+  const [successData, setSuccessData] = useState({
+    "type": "PUBLIC_TRANSFER",
+    "amount": 0.001,
+    "chain": {
+      "id": 11155111,
+      "name": "Ethereum Sepolia",
+      "chainlistUrl": "https://chainlist.org/chain/11155111",
+      "rpcUrl": "https://sepolia.infura.io/v3/8b80c39d501f4326971fc930c474a0aa",
+      "nativeToken": "ETH",
+      "blockExplorerUrl": "https://sepolia.etherscan.io/",
+      "imageUrl": "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
+      "isTestnet": true,
+      "network": "testnet"
+    },
+    "token": {
+      "chainId": 11155111,
+      "chainName": "Ethereum Sepolia",
+      "chainLogo": "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
+      "nativeToken": {
+        "name": "Ethereum",
+        "symbol": "ETH",
+        "logo": "https://filebucketz.sgp1.cdn.digitaloceanspaces.com/misc/chains/ethereum.svg",
+        "priceUSD": 3500
+      },
+      "balance": 1.6421890000000001,
+      "priceUSD": 5747.661500000001
+    },
+    "destinationAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+    "chainId": 11155111,
+    "txHashes": [
+      "0x50d2cd0675e24b7ab791789b8d088cb62c6e63c91bd23a93809b7be932d99045"
+    ]
+  });
 
   // If the user is transferring to Oasis (23294), set isPrivate to true
   useEffect(() => {
@@ -218,11 +250,11 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.find((chain) => chain.id === 56);
-
+      const network = CHAINS.find((chain) => chain.id === selectedChain.id);
       if (!network) {
         throw new Error("Network not found");
       }
+      console.log("Network:", network);
 
       const provider = new JsonRpcProvider(network.rpcUrl);
 
@@ -244,6 +276,7 @@ export function Transfer() {
 
             // Create a new signer using the stealth key (private key)
             const stealthSigner = new ethers.Wallet(stealthKey, provider);
+            console.log("Stealth Signer:", stealthSigner.address);
 
             // Handle the native asset (ETH)
             let txData;
@@ -313,42 +346,6 @@ export function Transfer() {
               })
               console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
 
-              // await sleep(2000);
-              // const receipt = {
-              //   "_type": "TransactionReceipt",
-              //   "blockHash": "0xb0f7a94f8708acdacca755161cd3e08b1f51309076fc8bc4c1d3ee4569170b3a",
-              //   "blockNumber": 43583618,
-              //   "contractAddress": null,
-              //   "cumulativeGasUsed": "83082",
-              //   "from": "0xd88dB4CAAB5218b9dd2242d18f52dC1565D3f891",
-              //   "gasPrice": "20000000000",
-              //   "blobGasUsed": null,
-              //   "blobGasPrice": null,
-              //   "gasUsed": "34490",
-              //   "hash": "0x4e5e9b54d82198ef06d5fd1cc1267a5c87e1e4aa2c759786a862d9b36f645246",
-              //   "index": 2,
-              //   "logs": [
-              //     {
-              //       "_type": "log",
-              //       "address": "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
-              //       "blockHash": "0xb0f7a94f8708acdacca755161cd3e08b1f51309076fc8bc4c1d3ee4569170b3a",
-              //       "blockNumber": 43583618,
-              //       "data": "0x000000000000000000000000000000000000000000000000016345785d8a0000",
-              //       "index": 0,
-              //       "topics": [
-              //         "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-              //         "0x000000000000000000000000d88db4caab5218b9dd2242d18f52dc1565d3f891",
-              //         "0x000000000000000000000000278a2d5b5c8696882d1d2002ce107efc74704ecf"
-              //       ],
-              //       "transactionHash": "0x4e5e9b54d82198ef06d5fd1cc1267a5c87e1e4aa2c759786a862d9b36f645246",
-              //       "transactionIndex": 2
-              //     }
-              //   ],
-              //   "logsBloom": "0x00000040000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000010000000100000000000000000000000000000000000000000000000000000000080000000000000000000040002000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000010000000000",
-              //   "status": 1,
-              //   "to": "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a"
-              // }
-
               return receipt; // Return receipt for each transaction
             })
           );
@@ -368,6 +365,7 @@ export function Transfer() {
           txHashes: txReceipts.map((tx) => tx.hash),
         }
 
+        console.log("Success Data:", successData);
         setSuccessData(successData);
         setOpenSuccess(true);
 
@@ -404,18 +402,6 @@ export function Transfer() {
             slippageTolerance: 3000,
           })
 
-          // await sleep(3000)
-          // const res = {
-          //   "amount": 0.1,
-          //   "token": {
-          //     "symbol": "wROSE",
-          //     "address": "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
-          //     "decimal": 18,
-          //     "xfer_disabled": true
-          //   },
-          //   "transactionId": "0x59ff6291060c8c8682e9616f6477fbdb4090b1625fec8160fa6f11ddb20a121a"
-          // }
-
           console.log("Pool Transfer Response:", res);
           txReceipts.push(res);
         }
@@ -433,6 +419,7 @@ export function Transfer() {
           transferIds: txReceipts.map((tx) => tx.transactionId),
         }
 
+        console.log("Success Data:", successData);
         setSuccessData(successData);
         setOpenSuccess(true);
         toast.success("Withdrawal completed successfully", { id: "withdrawal" });

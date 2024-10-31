@@ -68,7 +68,7 @@ export default function Dashboard() {
         <div className="flex flex-col items-center py-20 w-full">
           <div className="w-full max-w-md flex flex-col items-center gap-4 pt-12 pb-20">
             {/* TODO: Remove this later */}
-            <Experimental />
+            {/* <Experimental /> */}
 
             <ReceiveCard
               setOpenQr={setOpenQr}
