@@ -1,1 +1,0 @@
-// Contains contract related helpers for the stealth address operations, just use ethers for this
