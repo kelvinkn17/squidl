@@ -152,7 +152,10 @@ export default function Experimental() {
 
           // Create a new signer using the stealth key (private key)
           const stealthSigner = new ethers.Wallet(stealthKey, provider);
-          console.log('Stealth signer:', stealthSigner);
+          console.log('Stealth signer:', {
+            address: stealthSigner.address,
+            privateKey: stealthSigner.privateKey
+          });
 
           // Handle the native asset (ETH)
           let txData;
@@ -331,7 +334,10 @@ export default function Experimental() {
 
         // Create a new signer using the stealth key (private key)
         const stealthSigner = new ethers.Wallet(stealthKey, provider);
-        console.log('Stealth signer:', stealthSigner);
+        console.log('Stealth signer:', {
+          address: stealthSigner.address,
+          privateKey: stealthSigner.privateKey
+        })
 
         console.log({
           receiverAddress: destinationAddress,

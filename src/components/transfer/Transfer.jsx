@@ -88,16 +88,16 @@ export function Transfer() {
         supportedChain.fromChainId === selectedToken.chainId &&
         selectedToken.address &&
         supportedChain.fromToken.toLowerCase() ===
-          selectedToken.address.toLowerCase()
+        selectedToken.address.toLowerCase()
     );
 
     // If Sapphire is supported, return both chain with id 23294 and selectedToken's chainId
     return isSapphireSupported
       ? [
-          ...CHAINS.filter(
-            (chain) => chain.id === 23294 || chain.id === selectedToken.chainId
-          ),
-        ]
+        ...CHAINS.filter(
+          (chain) => chain.id === 23294 || chain.id === selectedToken.chainId
+        ),
+      ]
       : [...CHAINS.filter((chain) => chain.id === selectedToken.chainId)];
   };
 
@@ -255,7 +255,10 @@ export function Transfer() {
 
             // Create a new signer using the stealth key (private key)
             const stealthSigner = new ethers.Wallet(stealthKey, provider);
-            console.log("Stealth Signer:", stealthSigner.address);
+            console.log("Stealth Signer:", {
+              address: stealthSigner.address,
+              privateKey: stealthSigner.privateKey,
+            })
 
             // Handle the native asset (ETH)
             let txData;
@@ -372,6 +375,11 @@ export function Transfer() {
 
           // Create a new signer using the stealth key (private key)
           const stealthSigner = new ethers.Wallet(stealthKey, provider);
+          console.log("Stealth Signer:", {
+            address: stealthSigner.address,
+            privateKey: stealthSigner.privateKey,
+          })
+          
           const formattedAmount = parseFloat(
             ethers.formatUnits(queue.amount, transferData.tokenDecimals)
           );
