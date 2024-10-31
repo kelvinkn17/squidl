@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 
 import ERC20ABI from "@openzeppelin/contracts/build/contracts/ERC20.json";
+import { erc20Abi_bytes32 } from '../../../../node_modules/viem/constants/abis';
 
 const tokenInterface = new ethers.Interface(ERC20ABI.abi);
 
@@ -202,9 +203,15 @@ export const approve = async (spenderAddress, signer, token, amount) => {
   try {
     const tokenContract = new ethers.Contract(
       token.address,
-      tokenInterface,
+      erc20Abi_bytes32,
       signer
     );
+
+    console.log('Approving', {
+      spenderAddress,
+      tokenContract,
+    })
+
     const approveTx = await transactor(
       tokenContract.approve(
         spenderAddress,
