@@ -200,7 +200,7 @@ export default function AliasDetail() {
 
             <button
               onClick={async () => {
-                onCopy(`${alias}.squidl.me`);
+                onCopy(`${fullAlias}`);
               }}
             >
               <Icons.copy

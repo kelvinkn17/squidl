@@ -15,6 +15,17 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <AuthLayout />,
+    loader: () => {
+      const host = window.location.hostname;
+      const suffix = `.${import.meta.env.VITE_WEBSITE_HOST}`;
+
+      if (host.endsWith(suffix)) {
+        const subdomain = host.slice(0, -suffix.length);
+        return { subdomain: subdomain || null };
+      }
+
+      return { subdomain: null };
+    },
     errorElement: <ErrorPage />,
     children: [
       {
