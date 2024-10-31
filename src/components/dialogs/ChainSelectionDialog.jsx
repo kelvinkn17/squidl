@@ -12,7 +12,6 @@ export default function ChainSelectionDialog({
   onSelectToken,
   setSelectedChain,
 }) {
-  console.log({ chains }, "in comp");
   return (
     <motion.div
       initial={{ height: 0 }}

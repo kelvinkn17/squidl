@@ -23,17 +23,6 @@ import { useUser } from "../../../providers/UserProvider.jsx";
 import { useWeb3 } from "../../../providers/Web3Provider.jsx";
 import { formatCurrency } from "@coingecko/cryptoformat";
 
-function generateRandomEthAddress() {
-  const randomBytes = new Uint8Array(20);
-  window.crypto.getRandomValues(randomBytes);
-
-  // Convert the bytes to a hexadecimal string
-  const randomHex = Array.from(randomBytes, (byte) =>
-    byte.toString(16).padStart(2, "0")
-  ).join("");
-
-  return "0x" + randomHex;
-}
 
 export default function Dashboard() {
   const [openQr, setOpenQr] = useState(false);

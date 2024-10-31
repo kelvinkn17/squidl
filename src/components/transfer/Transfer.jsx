@@ -16,6 +16,8 @@ import { CHAINS, TESTNET_CHAINS } from "../../config.js";
 import { BN } from "bn.js";
 import { confirmTransaction, handleKeyDown } from "./helpers.js";
 import { formatCurrency } from "@coingecko/cryptoformat";
+import { poolTransfer } from "../../lib/cBridge/cBridge.js";
+import { sleep } from "../../utils/process.js";
 
 // Make it so that the oasis sapphire (chainId: 23294) shows up on ChainSelectionDialog only when the exact token is selected
 const SUPPORTED_SAPPHIRE_BRIDGE = [
@@ -49,6 +51,7 @@ export function Transfer() {
   const [error, setError] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
+  const [successData, setSuccessData] = useState(null);
 
   // If the user is transferring to Oasis (23294), set isPrivate to true
   useEffect(() => {
@@ -78,8 +81,6 @@ export function Transfer() {
         selectedToken.address &&
         supportedChain.fromToken.toLowerCase() === selectedToken.address.toLowerCase()
     );
-
-    console.log("Is Sapphire Supported:", isSapphireSupported);
 
     // If Sapphire is supported, return both chain with id 23294 and selectedToken's chainId
     return isSapphireSupported
@@ -160,21 +161,11 @@ export function Transfer() {
 
 
       console.log("Transfer data:", transferData);
-      console.log("Stealth addresses:", assets.stealthAddresses);
-
-      console.log('aggregate:', {
-        isNative: transferData.isNative,
-        chainId: transferData.chainId,
-        tokenAddress: transferData.tokenAddress,
-      })
-
       const aggregatedAssets = aggregateAssets(assets.stealthAddresses, {
         isNative: transferData.isNative,
         chainId: transferData.sourceChainId,
         tokenAddress: transferData.tokenAddress,
       });
-
-      console.log("Assets from handle transfer:", aggregatedAssets);
 
       // Sort assets by balance and prepare the withdrawal queue
       const sortedAssets = aggregatedAssets.sort(
@@ -186,7 +177,6 @@ export function Transfer() {
         ? toBN(amount, 18) // Use 18 decimals for native token
         : toBN(amount, transferData.tokenDecimals); // Use token-specific decimals
 
-      console.log("Initial Unit Amount:", unitAmount.toString());
 
       // Process the withdraw queue with bn.js for stability
       const withdrawQueue = sortedAssets.reduce((queue, asset) => {
@@ -198,14 +188,10 @@ export function Transfer() {
           tokenDecimals: transferData.tokenDecimals,
         })
         const assetAmount = toBN(asset.amount, transferData.tokenDecimals);
-        console.log(`Processing asset with amount: ${assetAmount.toString()} and address: ${asset.address}`);
 
         // Calculate the amount to withdraw
         const withdrawAmount = unitAmount.lt(assetAmount) ? unitAmount : assetAmount;
         unitAmount = unitAmount.sub(withdrawAmount);
-
-        console.log(`Withdraw Amount: ${withdrawAmount.toString()}`);
-        console.log(`Remaining Unit Amount: ${unitAmount.toString()}`);
 
         return [
           ...queue,
@@ -232,26 +218,167 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.find((chain) => chain.id === transferData.chainId);
-      console.log("Network:", network);
+      const network = CHAINS.find((chain) => chain.id === 56);
 
       if (!network) {
         throw new Error("Network not found");
       }
 
       const provider = new JsonRpcProvider(network.rpcUrl);
-      const transactions = [];
 
-      for (const queue of withdrawQueue) {
+      // Handle the same chain transfer
+      if (isDifferentChain === false) {
+        const transactions = [];
+        for (const queue of withdrawQueue) {
+          try {
+            // Compute stealth key and stealth address
+            const [stealthKey, stealthAddress] =
+              await contract.computeStealthKey.staticCall(
+                authSigner,
+                transferData.userMetaAddress,
+                1,
+                queue.ephemeralPub
+              );
+
+            queue.stealthKey = stealthKey;
+
+            // Create a new signer using the stealth key (private key)
+            const stealthSigner = new ethers.Wallet(stealthKey, provider);
+
+            // Handle the native asset (ETH)
+            let txData;
+
+            if (transferData.isNative) {
+              // TODO: If the balance can't cover the gas fee, reduce the amount
+              // Minimal transaction data for ETH transfer
+              txData = {
+                from: stealthSigner.address,
+                to: transferData.destinationAddress,
+                value: queue.amount,
+                chainId: network.id,
+                nonce: await stealthSigner.getNonce(),
+                gasPrice: ethers.parseUnits("20", "gwei"),
+              };
+            } else {
+              const tokenContract = new ethers.Contract(
+                transferData.tokenAddress,
+                ["function transfer(address to, uint256 amount) returns (bool)"],
+                stealthSigner
+              );
+
+              txData = await tokenContract.transfer.populateTransaction(
+                transferData.destinationAddress,
+                queue.amount
+              );
+              txData.from = stealthSigner.address;
+              txData.chainId = network.id;
+              txData.nonce = await stealthSigner.getNonce();
+              txData.gasPrice = ethers.parseUnits("20", "gwei");
+            }
+
+            // Estimate gas limit for the transaction
+            const gasEstimate = await provider.estimateGas(txData);
+            txData.gasLimit = gasEstimate;
+
+            // Sign the transaction using the stealthSigner
+            const signedTx = await stealthSigner.signTransaction(txData);
+            transactions.push(signedTx); // Collect the signed transaction
+          } catch (error) {
+            console.error("Error generating transaction:", error);
+            throw error;
+          }
+        }
+
+        // Send all signed transactions in a batch
+        toast.loading("Processing transaction", { id: "withdrawal" });
+
+        let txReceipts = []; // Define txReceipts outside the try-catch block
+
         try {
-          console.log({
-            auth: authSigner,
-            metaAddress: transferData.userMetaAddress,
-            k: 1,
-            ephemeralPub: queue.ephemeralPub,
-          });
+          toast.loading("Confirming transactions", { id: "withdrawal" });
 
-          // Compute stealth key and stealth address
+          // Send and confirm all transactions
+          txReceipts = await Promise.all(
+            transactions.map(async (signedTx) => {
+              // Send the raw transaction
+              const txResponse = await provider.send(
+                "eth_sendRawTransaction",
+                [signedTx] // Send the signed transaction
+              );
+
+              // Wait for transaction to be mined (confirmed)
+              const receipt = await confirmTransaction({
+                txHash: txResponse,
+                provider: provider,
+              })
+              console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
+
+              // await sleep(2000);
+              // const receipt = {
+              //   "_type": "TransactionReceipt",
+              //   "blockHash": "0xb0f7a94f8708acdacca755161cd3e08b1f51309076fc8bc4c1d3ee4569170b3a",
+              //   "blockNumber": 43583618,
+              //   "contractAddress": null,
+              //   "cumulativeGasUsed": "83082",
+              //   "from": "0xd88dB4CAAB5218b9dd2242d18f52dC1565D3f891",
+              //   "gasPrice": "20000000000",
+              //   "blobGasUsed": null,
+              //   "blobGasPrice": null,
+              //   "gasUsed": "34490",
+              //   "hash": "0x4e5e9b54d82198ef06d5fd1cc1267a5c87e1e4aa2c759786a862d9b36f645246",
+              //   "index": 2,
+              //   "logs": [
+              //     {
+              //       "_type": "log",
+              //       "address": "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
+              //       "blockHash": "0xb0f7a94f8708acdacca755161cd3e08b1f51309076fc8bc4c1d3ee4569170b3a",
+              //       "blockNumber": 43583618,
+              //       "data": "0x000000000000000000000000000000000000000000000000016345785d8a0000",
+              //       "index": 0,
+              //       "topics": [
+              //         "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              //         "0x000000000000000000000000d88db4caab5218b9dd2242d18f52dc1565d3f891",
+              //         "0x000000000000000000000000278a2d5b5c8696882d1d2002ce107efc74704ecf"
+              //       ],
+              //       "transactionHash": "0x4e5e9b54d82198ef06d5fd1cc1267a5c87e1e4aa2c759786a862d9b36f645246",
+              //       "transactionIndex": 2
+              //     }
+              //   ],
+              //   "logsBloom": "0x00000040000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000010000000100000000000000000000000000000000000000000000000000000000080000000000000000000040002000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000010000000000",
+              //   "status": 1,
+              //   "to": "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a"
+              // }
+
+              return receipt; // Return receipt for each transaction
+            })
+          );
+
+          console.log("All transactions confirmed:", txReceipts);
+        } catch (error) {
+          console.error("Error sending or confirming transactions:", error);
+        }
+
+        const successData = {
+          type: "PUBLIC_TRANSFER",
+          amount: parseFloat(amount),
+          chain: selectedChain,
+          token: selectedToken,
+          destinationAddress: destination,
+          chainId: selectedChain.id,
+          txHashes: txReceipts.map((tx) => tx.hash),
+        }
+
+        setSuccessData(successData);
+        setOpenSuccess(true);
+
+        // txReceipts is now accessible outside the try-catch block
+        console.log("Confirmed transactions:", txReceipts);
+
+        toast.success("Withdrawal completed successfully", { id: "withdrawal" });
+      } else if (isDifferentChain === true) {
+        // Handle cross-chain transfer
+        let txReceipts = [];
+        for (const queue of withdrawQueue) {
           const [stealthKey, stealthAddress] =
             await contract.computeStealthKey.staticCall(
               authSigner,
@@ -260,100 +387,56 @@ export function Transfer() {
               queue.ephemeralPub
             );
 
-          console.log("Stealth address:", { stealthAddress, stealthKey });
-
           queue.stealthKey = stealthKey;
 
           // Create a new signer using the stealth key (private key)
           const stealthSigner = new ethers.Wallet(stealthKey, provider);
-          console.log("Stealth signer:", stealthSigner);
+          const formattedAmount = parseFloat(ethers.formatUnits(queue.amount, transferData.tokenDecimals));
 
-          // Handle the native asset (ETH)
-          let txData;
-
-          if (transferData.isNative) {
-            // TODO: If the balance can't cover the gas fee, reduce the amount
-            console.log("INSIDE IS NATIVE");
-            // Minimal transaction data for ETH transfer
-            txData = {
-              from: stealthSigner.address,
-              to: transferData.destinationAddress,
-              value: queue.amount,
-              chainId: network.id,
-              nonce: await stealthSigner.getNonce(),
-              gasPrice: ethers.parseUnits("20", "gwei"),
-            };
-          } else {
-            // TODO: Handle ERC20 tokens
-            const tokenContract = new ethers.Contract(
-              transferData.tokenAddress,
-              ["function transfer(address to, uint256 amount) returns (bool)"],
-              stealthSigner
-            );
-
-            console.log("queue.amount", queue.amount);
-            
-            txData = await tokenContract.transfer.populateTransaction(
-              transferData.destinationAddress,
-              queue.amount
-            );
-            txData.from = stealthSigner.address;
-            txData.chainId = network.id;
-            txData.nonce = await stealthSigner.getNonce();
-            txData.gasPrice = ethers.parseUnits("20", "gwei");
-          }
-
-          console.log("Transaction data:", txData);
-
-          // Estimate gas limit for the transaction
-          const gasEstimate = await provider.estimateGas(txData);
-          txData.gasLimit = gasEstimate;
-
-          // Sign the transaction using the stealthSigner
-          const signedTx = await stealthSigner.signTransaction(txData);
-          transactions.push(signedTx); // Collect the signed transaction
-        } catch (error) {
-          console.error("Error generating transaction:", error);
-          throw error;
-        }
-      }
-
-      // Send all signed transactions in a batch
-      toast.loading("Processing transaction", { id: "withdrawal" });
-
-      let txReceipts = []; // Define txReceipts outside the try-catch block
-
-      try {
-        toast.loading("Confirming transactions", { id: "withdrawal" });
-        
-        // Send and confirm all transactions
-        txReceipts = await Promise.all(
-          transactions.map(async (signedTx) => {
-            // Send the raw transaction
-            const txResponse = await provider.send(
-              "eth_sendRawTransaction",
-              [signedTx] // Send the signed transaction
-            );
-
-            // Wait for transaction to be mined (confirmed)
-            const receipt = await confirmTransaction({
-              txHash: txResponse,
-              provider: provider,
-            })
-            console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
-            return receipt; // Return receipt for each transaction
+          const res = await poolTransfer({
+            cBridgeBaseUrl: "https://cbridge-prod2.celer.app",
+            receiverAddress: transferData.destinationAddress,
+            signer: stealthSigner,
+            srcChainId: transferData.sourceChainId,
+            dstChainId: transferData.chainId,
+            tokenSymbol: transferData.token.token.symbol,
+            amount: formattedAmount,
+            slippageTolerance: 3000,
           })
-        );
+
+          // await sleep(3000)
+          // const res = {
+          //   "amount": 0.1,
+          //   "token": {
+          //     "symbol": "wROSE",
+          //     "address": "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
+          //     "decimal": 18,
+          //     "xfer_disabled": true
+          //   },
+          //   "transactionId": "0x59ff6291060c8c8682e9616f6477fbdb4090b1625fec8160fa6f11ddb20a121a"
+          // }
+
+          console.log("Pool Transfer Response:", res);
+          txReceipts.push(res);
+        }
+
 
         console.log("All transactions confirmed:", txReceipts);
-      } catch (error) {
-        console.error("Error sending or confirming transactions:", error);
+
+        const successData = {
+          type: "PRIVATE_TRANSFER",
+          amount: parseFloat(amount),
+          chain: selectedChain,
+          token: selectedToken,
+          destinationAddress: destination,
+          chainId: selectedChain.id,
+          transferIds: txReceipts.map((tx) => tx.transactionId),
+        }
+
+        setSuccessData(successData);
+        setOpenSuccess(true);
+        toast.success("Withdrawal completed successfully", { id: "withdrawal" });
       }
-
-      // txReceipts is now accessible outside the try-catch block
-      console.log("Confirmed transactions:", txReceipts);
-
-      toast.success("Withdrawal completed successfully", { id: "withdrawal" });
     } catch (error) {
       console.error("Error during withdrawal:", error);
       toast.error(`Error during withdrawal: ${error.message}`, {
@@ -371,10 +454,19 @@ export function Transfer() {
         setOpen={setOpenSuccess}
         botButtonHandler={() => {
           setOpenSuccess(false);
+          // Reset the form
+          setAmount("");
+          setSelectedToken(null);
+          setSelectedChain(null);
+          setDestination("");
+          setError("");
+          setIsTransferring(false);
+          setSuccessData(null);
         }}
         botButtonTitle={"Done"}
         title={"Transaction Successful"}
         caption={"Your transaction has been submitted successfully."}
+        successData={successData}
       />
       <div
         className={

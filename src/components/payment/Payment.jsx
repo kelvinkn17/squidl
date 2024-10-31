@@ -1,17 +1,17 @@
-import toast from "react-hot-toast";
-import { Icons } from "../shared/Icons.jsx";
 import { useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { Button, Spinner } from "@nextui-org/react";
-import { QRCode } from "react-qrcode-logo";
-import OnRampDialog from "../dialogs/OnrampDialog.jsx";
 import { useEffect, useState } from "react";
-import SuccessDialog from "../dialogs/SuccessDialog.jsx";
-import Chains from "../shared/Chains.jsx";
-import { shortenAddress } from "../../utils/string.js";
+import toast from "react-hot-toast";
+import { QRCode } from "react-qrcode-logo";
 import { useParams } from "react-router-dom";
-import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import useSWR from "swr";
 import { squidlAPI } from "../../api/squidl.js";
+import { useWeb3 } from "../../providers/Web3Provider.jsx";
+import { shortenAddress } from "../../utils/string.js";
+import OnRampDialog from "../dialogs/OnrampDialog.jsx";
+import SuccessDialog from "../dialogs/SuccessDialog.jsx";
+import Chains from "../shared/Chains.jsx";
+import { Icons } from "../shared/Icons.jsx";
 
 export default function Payment() {
   const isLoggedIn = useIsLoggedIn();

@@ -333,6 +333,16 @@ export default function Experimental() {
         const stealthSigner = new ethers.Wallet(stealthKey, provider);
         console.log('Stealth signer:', stealthSigner);
 
+        console.log({
+          receiverAddress: destinationAddress,
+          signer: stealthSigner,
+          srcChainId: sourceChainId,
+          dstChainId: destinationChainId,
+          tokenSymbol: "wROSE",
+          amount: amount,
+          slippageTolerance: 3000,
+        })
+
         const res = await poolTransfer({
           cBridgeBaseUrl: "https://cbridge-prod2.celer.app",
           receiverAddress: destinationAddress,
