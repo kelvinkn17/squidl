@@ -26,6 +26,12 @@ const SUPPORTED_SAPPHIRE_BRIDGE = [
     toChainId: 23294,
     fromToken: "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
     toToken: ""
+  },
+  {
+    fromChainId: 1,
+    toChainId: 23294,
+    fromToken: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    toToken: ""
   }
 ]
 
@@ -45,12 +51,12 @@ export function Transfer() {
   const [openChainDialog, setOpenChainDialog] = useState(false);
   const [selectedToken, setSelectedToken] = useState(null);
   const [selectedChain, setSelectedChain] = useState(null);
-  const [destination, setDestination] = useState("0x278A2d5B5C8696882d1D2002cE107efc74704ECf");
+  const [destination, setDestination] = useState(null);
   const [maxBalance, setMaxBalance] = useState(0);
   const [error, setError] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [openSuccess, setOpenSuccess] = useState(true);
+  const [openSuccess, setOpenSuccess] = useState(false);
   const [successData, setSuccessData] = useState({
     "type": "PUBLIC_TRANSFER",
     "amount": 0.001,
@@ -390,6 +396,8 @@ export function Transfer() {
           // Create a new signer using the stealth key (private key)
           const stealthSigner = new ethers.Wallet(stealthKey, provider);
           const formattedAmount = parseFloat(ethers.formatUnits(queue.amount, transferData.tokenDecimals));
+
+          console.log('hehe')
 
           const res = await poolTransfer({
             cBridgeBaseUrl: "https://cbridge-prod2.celer.app",
