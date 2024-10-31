@@ -20,6 +20,7 @@ export function aggregateAssets(stealthAddresses, { isNative, chainId, tokenAddr
 
         return {
           address: wallet.address || "",
+          key: wallet.key || "",
           ephemeralPub: wallet.ephemeralPub || "",
           viewHint: wallet.viewHint,
           balance: balanceData.balance,
