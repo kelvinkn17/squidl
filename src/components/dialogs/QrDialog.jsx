@@ -86,12 +86,6 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
         <div className="px-5 md:px-12">
           <div className="bg-primary-600 rounded-[24px] px-5 py-4 flex flex-col items-center justify-center w-full">
             <div className="w-full h-full bg-white p-5 rounded-[24px]">
-              {/* <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/QR_Code_Example.svg/1200px-QR_Code_Example.svg.png"
-                alt="qr"
-                className="w-full h-full object-contain"
-              /> */}
-
               <QRCode
                 ref={qrRef}
                 value={`${user?.username}.squidl.me`}

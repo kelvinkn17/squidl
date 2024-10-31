@@ -256,7 +256,7 @@ function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
         onClick={() => {
           setOpen(false);
           setStep("one");
-          navigate("/");
+          window.location.href = "/";
         }}
         className="h-16 rounded-full bg-transparent flex items-center justify-center w-full mt-1 text-primary-600"
       >
