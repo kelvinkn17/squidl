@@ -67,6 +67,46 @@ const BRIDGE_CONFIGS = {
     },
   ],
   chain_token: {
+    1: {
+      token: [
+        {
+          "token": {
+            "symbol": "USDC",
+            "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "decimal": 6,
+            "xfer_disabled": false
+          },
+          "name": "USD Coin",
+          "icon": "https://get.celer.app/cbridge-icons/USDC.png",
+          "inbound_lmt": "5000000000000",
+          "inbound_epoch_cap": "10000000000000",
+          "transfer_disabled": false,
+          "liq_add_disabled": false,
+          "liq_rm_disabled": false,
+          "liq_agg_rm_src_disabled": false,
+          "delay_threshold": "",
+          "delay_period": 0
+        },
+        {
+          "token": {
+            "symbol": "WETH",
+            "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "decimal": 18,
+            "xfer_disabled": false
+          },
+          "name": "Wrapped ETH",
+          "icon": "https://get.celer.app/cbridge-icons/ETH.png",
+          "inbound_lmt": "2000000000000000000000",
+          "inbound_epoch_cap": "5000000000000000000000",
+          "transfer_disabled": false,
+          "liq_add_disabled": false,
+          "liq_rm_disabled": false,
+          "liq_agg_rm_src_disabled": false,
+          "delay_threshold": "",
+          "delay_period": 0
+        },
+      ]
+    },
     56: {
       token: [
         {
@@ -118,24 +158,6 @@ const BRIDGE_CONFIGS = {
           },
           "name": "Binance Coin",
           "icon": "https://get.celer.app/cbridge-icons/BNB.png",
-          "inbound_lmt": "",
-          "inbound_epoch_cap": "",
-          "transfer_disabled": false,
-          "liq_add_disabled": false,
-          "liq_rm_disabled": false,
-          "liq_agg_rm_src_disabled": false,
-          "delay_threshold": "",
-          "delay_period": 0
-        },
-        {
-          "token": {
-            "symbol": "MATIC",
-            "address": "0xa349005a68FA33e8DACAAa850c45175bbcD49B19",
-            "decimal": 18,
-            "xfer_disabled": true
-          },
-          "name": "Matic Token",
-          "icon": "https://i.postimg.cc/4dxQXmk7/image-294.png",
           "inbound_lmt": "",
           "inbound_epoch_cap": "",
           "transfer_disabled": false,

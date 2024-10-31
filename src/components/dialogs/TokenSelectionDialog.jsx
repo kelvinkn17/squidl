@@ -8,7 +8,6 @@ import { useUser } from "../../providers/UserProvider.jsx";
 export default function TokenSelectionDialog({
   open,
   setOpen,
-  tokens,
   assets,
   selectedToken,
   setSelectedToken,
@@ -41,57 +40,6 @@ export default function TokenSelectionDialog({
           />
         </div>
         <div className="flex flex-col w-full mt-4 overflow-y-auto flex-grow min-h-0 px-6 pb-6">
-          {/* {tokens.map((token, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setSelectedToken(token);
-                setOpen(false);
-                setAmount(
-                  balances.find(
-                    (balance) =>
-                      balance.chainName === token.chainName &&
-                      balance.tokenName === token.tokenName
-                  )?.balance
-                );
-              }}
-              className={cnm(
-                "px-4 py-2 ",
-                selectedToken &&
-                  selectedToken.id === token.id &&
-                  "bg-neutral-100 rounded-xl"
-              )}
-            >
-              <Token
-                tokenImg={token.tokenLogoUrl}
-                chainImg={token.chainLogoUrl}
-                title={token.tokenName}
-                isPrivate={isPrivate}
-                subtitle={token.chainName}
-                value={formatCurrency(
-                  balances.find(
-                    (balance) =>
-                      balance.chainName === token.chainName &&
-                      balance.tokenName === token.tokenName
-                  )?.balance,
-                  token.tokenName,
-                  "de"
-                )}
-                subValue={formatCurrency(
-                  balances.find(
-                    (balance) =>
-                      balance.chainName === token.chainName &&
-                      balance.tokenName === token.tokenName
-                  )?.balance,
-                  "USD",
-                  "en",
-                  false,
-                  { decimalPlaces: 0 }
-                )}
-              />
-            </button>
-          ))} */}
-
           {assets?.aggregatedBalances &&
             assets.aggregatedBalances.native.map((token, index) => {
               return (
@@ -117,7 +65,10 @@ export default function TokenSelectionDialog({
                     subtitle={token.chainName}
                     value={formatCurrency(
                       parseFloat(token.balance.toFixed(5)),
-                      token.nativeToken.symbol
+                      token.nativeToken.symbol,
+                      "de",
+                      false,
+                      { significantFigures: 5 }
                     )}
                     subValue={formatCurrency(
                       token.priceUSD,
@@ -157,7 +108,9 @@ export default function TokenSelectionDialog({
                     value={formatCurrency(
                       parseFloat(token.balance.toFixed(5)),
                       token.token.symbol,
-                      "de"
+                      "de",
+                      false,
+                      { significantFigures: 5 }
                     )}
                     subValue={formatCurrency(
                       token.priceUSD,

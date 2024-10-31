@@ -21,18 +21,8 @@ import { mainBalance, privateBalance } from "../../../store/balance-store.js";
 import Experimental from "./Experimental.jsx";
 import { useUser } from "../../../providers/UserProvider.jsx";
 import { useWeb3 } from "../../../providers/Web3Provider.jsx";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
-function generateRandomEthAddress() {
-  const randomBytes = new Uint8Array(20);
-  window.crypto.getRandomValues(randomBytes);
-
-  // Convert the bytes to a hexadecimal string
-  const randomHex = Array.from(randomBytes, (byte) =>
-    byte.toString(16).padStart(2, "0")
-  ).join("");
-
-  return "0x" + randomHex;
-}
 
 export default function Dashboard() {
   const [openQr, setOpenQr] = useState(false);
@@ -78,7 +68,7 @@ export default function Dashboard() {
         <div className="flex flex-col items-center py-20 w-full">
           <div className="w-full max-w-md flex flex-col items-center gap-4 pt-12 pb-20">
             {/* TODO: Remove this later */}
-            <Experimental />
+            {/* <Experimental /> */}
 
             <ReceiveCard
               setOpenQr={setOpenQr}
@@ -318,15 +308,7 @@ function TotalBalance() {
 
 function BalanceMode({ mode }) {
   const navigate = useNavigate();
-  const { userData } = useUser();
-
-  const { data: totalBalanceUSD, isLoading: totalBalanceLoading } = useSWR(
-    userData ? `/user/wallet-assets/${userData.username}/total-balance` : null,
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      return data;
-    }
-  );
+  const { assets, userData } = useUser();
 
   function onNavigate() {
     if (mode === "available") {
@@ -373,7 +355,7 @@ function BalanceMode({ mode }) {
             </motion.div>
           )}
         </AnimatePresence>
-        {totalBalanceLoading ? (
+        {!assets ? (
           <Skeleton className="w-20 h-10 rounded-lg absolute top-2 left-6" />
         ) : (
           <p
@@ -382,7 +364,9 @@ function BalanceMode({ mode }) {
               "left-6 top-2"
             )}
           >
-            ${totalBalanceUSD?.toLocaleString("en-US")}
+            {formatCurrency(assets.totalBalanceUSD, "USD", "en", false, {
+              significantFigures: 5,
+            })}
           </p>
         )}
       </div>

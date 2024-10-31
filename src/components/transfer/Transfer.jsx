@@ -14,37 +14,24 @@ import { ethers, JsonRpcProvider } from "ethers";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { CHAINS, TESTNET_CHAINS } from "../../config.js";
 import { BN } from "bn.js";
+import { confirmTransaction, handleKeyDown } from "./helpers.js";
+import { formatCurrency } from "@coingecko/cryptoformat";
+import { poolTransfer } from "../../lib/cBridge/cBridge.js";
+import { sleep } from "../../utils/process.js";
 
-const publicTokens = [
+// Make it so that the oasis sapphire (chainId: 23294) shows up on ChainSelectionDialog only when the exact token is selected
+const SUPPORTED_SAPPHIRE_BRIDGE = [
   {
-    id: 1,
-    token: "usdc",
-    chain: "eth",
-    tokenName: "USDC",
-    chainName: "Ethereum",
-    tokenLogoUrl: "/assets/usdc.png",
-    chainLogoUrl: "/assets/eth-logo.png",
+    fromChainId: 56,
+    toChainId: 23294,
+    fromToken: "0xF00600eBC7633462BC4F9C61eA2cE99F5AAEBd4a",
+    toToken: "",
   },
   {
-    id: 2,
-    token: "usdc",
-    chain: "eth",
-    tokenName: "USDC",
-    chainName: "BSC",
-    tokenLogoUrl: "/assets/usdc.png",
-    chainLogoUrl: "/assets/bsc-logo.png",
-  },
-];
-
-const privateTokens = [
-  {
-    id: 1,
-    token: "usdc",
-    chain: "eth",
-    tokenLogoUrl: "/assets/usdc.png",
-    chainLogoUrl: "/assets/oasis-logo.png",
-    tokenName: "USDC",
-    chainName: "Oasis",
+    fromChainId: 1,
+    toChainId: 23294,
+    fromToken: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    toToken: "",
   },
 ];
 
@@ -52,113 +39,67 @@ export function Transfer() {
   const { userData } = useUser();
   const [search] = useSearchParams();
   const type = search.get("type");
-  const isPrivate = type === "private";
-
-  const tokens = type
-    ? type === "private"
-      ? privateTokens
-      : publicTokens
-    : publicTokens;
-
-  const chains =
-    type === "private"
-      ? [
-          {
-            id: 1,
-            token: "eth",
-            chain: "eth",
-            tokenName: "Ethereum",
-            chainName: "BSC",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/bsc-logo.png",
-          },
-          {
-            id: 2,
-            token: "eth",
-            chain: "eth",
-            tokenName: "USDC",
-            chainName: "Ethereum",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/ethc-logo.png",
-          },
-          {
-            id: 3,
-            token: "eth",
-            chain: "eth",
-            tokenName: "USDC",
-            chainName: "Oasis",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-        ]
-      : [
-          {
-            id: 4,
-            token: "eth",
-            chain: "eth",
-            tokenName: "ETH",
-            chainName: "Ethereum",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-          {
-            id: 1,
-            token: "eth",
-            chain: "eth",
-            tokenName: "ETH",
-            chainName: "Oasis",
-            tokenLogoUrl: "/assets/usdc.png",
-            chainLogoUrl: "/assets/oasis-logo.png",
-          },
-        ];
+  // const isPrivate = type === "private";
 
   const { assets, isAssetsLoading } = useUser();
   const { contract } = useWeb3();
+  const navigate = useNavigate();
 
+  // State variables
   const [amount, setAmount] = useState("");
   const [openTokenDialog, setOpenTokenDialog] = useState(false);
   const [openChainDialog, setOpenChainDialog] = useState(false);
   const [selectedToken, setSelectedToken] = useState(null);
   const [selectedChain, setSelectedChain] = useState(null);
-  const [openSuccess, setOpenSuccess] = useState(false);
-  const [destination, setDestination] = useState("");
+  const [destination, setDestination] = useState(null);
   const [maxBalance, setMaxBalance] = useState(0);
-
-  const [balances, setBalances] = useState(
-    type === "private"
-      ? [
-          {
-            tokenName: "USDC",
-            chainName: "Oasis",
-            balance: 3000,
-          },
-        ]
-      : [
-          {
-            tokenName: "USDC",
-            chainName: "BSC",
-            balance: 1000,
-          },
-          {
-            tokenName: "USDC",
-            chainName: "Ethereum",
-            balance: 2000,
-          },
-        ]
-  );
-
-  const navigate = useNavigate();
-  const onCopy = (text) => {
-    toast.success("Copied to clipboard", {
-      id: "copy",
-      duration: 1000,
-      position: "bottom-center",
-    });
-    navigator.clipboard.writeText(text);
-  };
-
   const [error, setError] = useState("");
-  const { userSOLBalance = 1 } = useUser();
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [successData, setSuccessData] = useState();
+
+  // If the user is transferring to Oasis (23294), set isPrivate to true
+  useEffect(() => {
+    if (selectedChain && selectedChain.id === 23294) {
+      setIsPrivate(true);
+    } else {
+      setIsPrivate(false);
+    }
+  }, [selectedChain]);
+
+  // If selected token is changed, change the selected chain to the same chain as the token
+  useEffect(() => {
+    if (selectedToken) {
+      console.log("Selected Token:", selectedToken);
+      setSelectedChain(
+        CHAINS.find((chain) => chain.id === selectedToken.chainId)
+      );
+    }
+  }, [selectedToken]);
+
+  // Function to dynamically filter chains based on selected token and bridge support
+  const getFilteredChains = () => {
+    if (!selectedToken) return [];
+
+    // Check if the selected token matches the Sapphire Bridge requirements
+    const isSapphireSupported = SUPPORTED_SAPPHIRE_BRIDGE.some(
+      (supportedChain) =>
+        supportedChain.fromChainId === selectedToken.chainId &&
+        selectedToken.address &&
+        supportedChain.fromToken.toLowerCase() ===
+          selectedToken.address.toLowerCase()
+    );
+
+    // If Sapphire is supported, return both chain with id 23294 and selectedToken's chainId
+    return isSapphireSupported
+      ? [
+          ...CHAINS.filter(
+            (chain) => chain.id === 23294 || chain.id === selectedToken.chainId
+          ),
+        ]
+      : [...CHAINS.filter((chain) => chain.id === selectedToken.chainId)];
+  };
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -171,31 +112,12 @@ export function Transfer() {
     const amountFloat = parseFloat(value);
     if (isNaN(amountFloat) || amountFloat <= 0) {
       setError("Please enter a valid amount");
-    } else if (amountFloat > userSOLBalance) {
-      setError("Insufficient SOL balance");
+    } else if (amountFloat > selectedToken.balance) {
+      setError("Insufficient token balance");
     } else {
       setError("");
     }
   };
-
-  const handleKeyDown = (e) => {
-    if (
-      !/[0-9.]/.test(e.key) &&
-      e.key !== "Backspace" &&
-      e.key !== "Tab" &&
-      e.key !== "ArrowLeft" &&
-      e.key !== "ArrowRight" &&
-      e.key !== "Delete"
-    ) {
-      e.preventDefault();
-    }
-  };
-
-  useEffect(() => {
-    squidlAPI.get("/share-identity").then(({ data }) => {
-      console.log({ data });
-    });
-  }, []);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -205,17 +127,6 @@ export function Transfer() {
     }
   };
 
-  useEffect(() => {
-    if (
-      selectedToken &&
-      (selectedToken.chainName === "BSC" ||
-        selectedToken.chainName === "Ethereum")
-    ) {
-      setSelectedChain(chains.find((chain) => chain.chainName === "Oasis"));
-    }
-  }, [selectedToken]);
-
-  const [isTransferring, setIsTransferring] = useState(false);
   async function handleTransfer() {
     if (!selectedToken || !selectedChain) {
       return toast.error("Please select token and chain");
@@ -239,74 +150,59 @@ export function Transfer() {
 
       let transferData;
 
-      if (selectedToken?.nativeToken) {
-        // Handle the native asset (ETH)
-        transferData = {
-          userMetaAddress: userData.metaAddress,
-          chainId: selectedChain.id,
-          isNative: true,
-          tokenAddress: "",
-          tokenDecimals: 18,
-          destinationAddress: destination,
-        };
-      } else {
-        // Handle ERC20 tokens
-        transferData = {
-          userMetaAddress: userData.metaAddress,
-          chainId: selectedChain.id,
-          isNative: false,
-          tokenAddress: selectedToken.tokenAddress,
-          tokenDecimals: selectedToken.decimals,
-          destinationAddress: destination,
-        };
-      }
+      // Currently only supports these routes:
+      // - wROSE from BSC (56) to Oasis Sapphire (23294)
+      // - USDC from Ethereum Mainnet (1) to Oasis Sapphire (23294)
+
+      const isDifferentChain = selectedToken.chainId !== selectedChain.id;
+
+      transferData = {
+        userMetaAddress: userData.metaAddress,
+        sourceChainId: selectedToken.chainId,
+        chainId: selectedChain.id,
+        destinationAddress: destination,
+        isDifferentChain: isDifferentChain,
+        isNative: Boolean(selectedToken?.nativeToken),
+        tokenAddress: selectedToken?.nativeToken ? "" : selectedToken.address,
+        tokenDecimals: selectedToken?.nativeToken
+          ? 18
+          : selectedToken.token.decimals,
+        token: selectedToken,
+      };
 
       console.log("Transfer data:", transferData);
-      console.log("Stealth addresses:", assets.stealthAddresses);
-
       const aggregatedAssets = aggregateAssets(assets.stealthAddresses, {
         isNative: transferData.isNative,
-        chainId: transferData.chainId,
+        chainId: transferData.sourceChainId,
         tokenAddress: transferData.tokenAddress,
       });
-
-      console.log("Assets from handle transfer:", aggregatedAssets);
 
       // Sort assets by balance and prepare the withdrawal queue
       const sortedAssets = aggregatedAssets.sort(
         (a, b) => b.balance - a.balance
       );
 
-      console.log("amount", amount);
-      console.log("BIGINT amount", toBN(amount));
-
       // Convert the amount to a big number in the appropriate unit
       let unitAmount = transferData.isNative
         ? toBN(amount, 18) // Use 18 decimals for native token
         : toBN(amount, transferData.tokenDecimals); // Use token-specific decimals
-
-      console.log("Initial Unit Amount:", unitAmount.toString());
 
       // Process the withdraw queue with bn.js for stability
       const withdrawQueue = sortedAssets.reduce((queue, asset) => {
         if (unitAmount.lte(new BN(0))) return queue;
 
         // Convert asset amount directly to BN with the token's decimals
+        console.log({
+          amount: asset.amount,
+          tokenDecimals: transferData.tokenDecimals,
+        });
         const assetAmount = toBN(asset.amount, transferData.tokenDecimals);
-        console.log(
-          `Processing asset with amount: ${assetAmount.toString()} and address: ${
-            asset.address
-          }`
-        );
 
         // Calculate the amount to withdraw
         const withdrawAmount = unitAmount.lt(assetAmount)
           ? unitAmount
           : assetAmount;
         unitAmount = unitAmount.sub(withdrawAmount);
-
-        console.log(`Withdraw Amount: ${withdrawAmount.toString()}`);
-        console.log(`Remaining Unit Amount: ${unitAmount.toString()}`);
 
         return [
           ...queue,
@@ -333,28 +229,137 @@ export function Transfer() {
         return toast.error("Signer not available");
       }
 
-      const network = CHAINS.testnet.find(
-        (chain) => chain.id === transferData.chainId
-      );
-      console.log("Network:", network);
-
+      const network = CHAINS.find((chain) => chain.id === selectedChain.id);
       if (!network) {
         throw new Error("Network not found");
       }
+      console.log("Network:", network);
 
       const provider = new JsonRpcProvider(network.rpcUrl);
-      const transactions = [];
 
-      for (const queue of withdrawQueue) {
+      // Handle the same chain transfer
+      if (isDifferentChain === false) {
+        const transactions = [];
+        for (const queue of withdrawQueue) {
+          try {
+            // Compute stealth key and stealth address
+            const [stealthKey, stealthAddress] =
+              await contract.computeStealthKey.staticCall(
+                authSigner,
+                transferData.userMetaAddress,
+                1,
+                queue.ephemeralPub
+              );
+
+            queue.stealthKey = stealthKey;
+
+            // Create a new signer using the stealth key (private key)
+            const stealthSigner = new ethers.Wallet(stealthKey, provider);
+            console.log("Stealth Signer:", stealthSigner.address);
+
+            // Handle the native asset (ETH)
+            let txData;
+
+            if (transferData.isNative) {
+              // TODO: If the balance can't cover the gas fee, reduce the amount
+              // Minimal transaction data for ETH transfer
+              txData = {
+                from: stealthSigner.address,
+                to: transferData.destinationAddress,
+                value: queue.amount,
+                chainId: network.id,
+                nonce: await stealthSigner.getNonce(),
+                gasPrice: ethers.parseUnits("20", "gwei"),
+              };
+            } else {
+              const tokenContract = new ethers.Contract(
+                transferData.tokenAddress,
+                [
+                  "function transfer(address to, uint256 amount) returns (bool)",
+                ],
+                stealthSigner
+              );
+
+              txData = await tokenContract.transfer.populateTransaction(
+                transferData.destinationAddress,
+                queue.amount
+              );
+              txData.from = stealthSigner.address;
+              txData.chainId = network.id;
+              txData.nonce = await stealthSigner.getNonce();
+              txData.gasPrice = ethers.parseUnits("20", "gwei");
+            }
+
+            // Estimate gas limit for the transaction
+            const gasEstimate = await provider.estimateGas(txData);
+            txData.gasLimit = gasEstimate;
+
+            // Sign the transaction using the stealthSigner
+            const signedTx = await stealthSigner.signTransaction(txData);
+            transactions.push(signedTx); // Collect the signed transaction
+          } catch (error) {
+            console.error("Error generating transaction:", error);
+            throw error;
+          }
+        }
+
+        // Send all signed transactions in a batch
+        toast.loading("Processing transaction", { id: "withdrawal" });
+
+        let txReceipts = []; // Define txReceipts outside the try-catch block
+
         try {
-          console.log({
-            auth: authSigner,
-            metaAddress: transferData.userMetaAddress,
-            k: 1,
-            ephemeralPub: queue.ephemeralPub,
-          });
+          toast.loading("Confirming transactions", { id: "withdrawal" });
 
-          // Compute stealth key and stealth address
+          // Send and confirm all transactions
+          txReceipts = await Promise.all(
+            transactions.map(async (signedTx) => {
+              // Send the raw transaction
+              const txResponse = await provider.send(
+                "eth_sendRawTransaction",
+                [signedTx] // Send the signed transaction
+              );
+
+              // Wait for transaction to be mined (confirmed)
+              const receipt = await confirmTransaction({
+                txHash: txResponse,
+                provider: provider,
+              });
+              console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
+
+              return receipt; // Return receipt for each transaction
+            })
+          );
+
+          console.log("All transactions confirmed:", txReceipts);
+        } catch (error) {
+          console.error("Error sending or confirming transactions:", error);
+        }
+
+        const successData = {
+          type: "PUBLIC_TRANSFER",
+          amount: parseFloat(amount),
+          chain: selectedChain,
+          token: selectedToken,
+          destinationAddress: destination,
+          chainId: selectedChain.id,
+          txHashes: txReceipts.map((tx) => tx.hash),
+        };
+
+        console.log("Success Data:", successData);
+        setSuccessData(successData);
+        setOpenSuccess(true);
+
+        // txReceipts is now accessible outside the try-catch block
+        console.log("Confirmed transactions:", txReceipts);
+
+        toast.success("Withdrawal completed successfully", {
+          id: "withdrawal",
+        });
+      } else if (isDifferentChain === true) {
+        // Handle cross-chain transfer
+        let txReceipts = [];
+        for (const queue of withdrawQueue) {
           const [stealthKey, stealthAddress] =
             await contract.computeStealthKey.staticCall(
               authSigner,
@@ -363,97 +368,50 @@ export function Transfer() {
               queue.ephemeralPub
             );
 
-          console.log("Stealth address:", { stealthAddress, stealthKey });
-
           queue.stealthKey = stealthKey;
 
           // Create a new signer using the stealth key (private key)
           const stealthSigner = new ethers.Wallet(stealthKey, provider);
-          console.log("Stealth signer:", stealthSigner);
+          const formattedAmount = parseFloat(
+            ethers.formatUnits(queue.amount, transferData.tokenDecimals)
+          );
 
-          // Handle the native asset (ETH)
-          let txData;
+          console.log("hehe");
 
-          if (transferData.isNative) {
-            // TODO: If the balance can't cover the gas fee, reduce the amount
-            console.log("INSIDE IS NATIVE");
-            // Minimal transaction data for ETH transfer
-            txData = {
-              from: stealthSigner.address,
-              to: transferData.destinationAddress,
-              value: queue.amount,
-              chainId: network.id,
-              nonce: await stealthSigner.getNonce(),
-              gasPrice: ethers.parseUnits("20", "gwei"),
-            };
-          } else {
-            // TODO: Handle ERC20 tokens
-            const tokenContract = new ethers.Contract(
-              transferData.tokenAddress,
-              ["function transfer(address to, uint256 amount) returns (bool)"],
-              stealthSigner
-            );
-            const tokenAmount = ethers.utils.parseUnits(
-              String(queue.amount),
-              transferData.tokenDecimals
-            );
+          const res = await poolTransfer({
+            cBridgeBaseUrl: "https://cbridge-prod2.celer.app",
+            receiverAddress: transferData.destinationAddress,
+            signer: stealthSigner,
+            srcChainId: transferData.sourceChainId,
+            dstChainId: transferData.chainId,
+            tokenSymbol: transferData.token.token.symbol,
+            amount: formattedAmount,
+            slippageTolerance: 3000,
+          });
 
-            txData = await tokenContract.populateTransaction.transfer(
-              transferData.destinationAddress,
-              tokenAmount
-            );
-            txData.chainId = network.id;
-            txData.nonce = await stealthSigner.getNonce();
-            txData.gasPrice = ethers.parseUnits("20", "gwei");
-          }
-
-          console.log("Transaction data:", txData);
-
-          // Estimate gas limit for the transaction
-          const gasEstimate = await provider.estimateGas(txData);
-          txData.gasLimit = gasEstimate;
-
-          // Sign the transaction using the stealthSigner
-          const signedTx = await stealthSigner.signTransaction(txData);
-          transactions.push(signedTx); // Collect the signed transaction
-        } catch (error) {
-          console.error("Error generating transaction:", error);
-          throw error;
+          console.log("Pool Transfer Response:", res);
+          txReceipts.push(res);
         }
-      }
-
-      // Send all signed transactions in a batch
-      toast.loading("Processing transaction", { id: "withdrawal" });
-
-      let txReceipts = []; // Define txReceipts outside the try-catch block
-
-      try {
-        // Send and confirm all transactions
-        txReceipts = await Promise.all(
-          transactions.map(async (signedTx) => {
-            // Send the raw transaction
-            const txResponse = await provider.send(
-              "eth_sendRawTransaction",
-              [signedTx] // Send the signed transaction
-            );
-
-            // Wait for transaction to be mined (confirmed)
-            const receipt = await provider.waitForTransaction(txResponse);
-
-            console.log(`Transaction ${txResponse.hash} confirmed`, receipt);
-            return receipt; // Return receipt for each transaction
-          })
-        );
 
         console.log("All transactions confirmed:", txReceipts);
-      } catch (error) {
-        console.error("Error sending or confirming transactions:", error);
+
+        const successData = {
+          type: "PRIVATE_TRANSFER",
+          amount: parseFloat(amount),
+          chain: selectedChain,
+          token: selectedToken,
+          destinationAddress: destination,
+          chainId: selectedChain.id,
+          transferIds: txReceipts.map((tx) => tx.transactionId),
+        };
+
+        console.log("Success Data:", successData);
+        setSuccessData(successData);
+        setOpenSuccess(true);
+        toast.success("Withdrawal completed successfully", {
+          id: "withdrawal",
+        });
       }
-
-      // txReceipts is now accessible outside the try-catch block
-      console.log("Confirmed transactions:", txReceipts);
-
-      toast.success("Withdrawal completed successfully", { id: "withdrawal" });
     } catch (error) {
       console.error("Error during withdrawal:", error);
       toast.error(`Error during withdrawal: ${error.message}`, {
@@ -464,7 +422,6 @@ export function Transfer() {
     }
   }
 
-  console.log({ selectedToken, selectedChain });
   return (
     <>
       <SuccessDialog
@@ -472,10 +429,19 @@ export function Transfer() {
         setOpen={setOpenSuccess}
         botButtonHandler={() => {
           setOpenSuccess(false);
+          // Reset the form
+          setAmount("");
+          setSelectedToken(null);
+          setSelectedChain(null);
+          setDestination("");
+          setError("");
+          setIsTransferring(false);
+          setSuccessData(null);
         }}
         botButtonTitle={"Done"}
         title={"Transaction Successful"}
         caption={"Your transaction has been submitted successfully."}
+        successData={successData}
       />
       <div
         className={
@@ -487,8 +453,6 @@ export function Transfer() {
           assets={assets}
           setOpen={setOpenTokenDialog}
           isPrivacy={type ? (type === "privacy" ? true : false) : false}
-          tokens={tokens}
-          balances={balances}
           selectedToken={selectedToken}
           setSelectedToken={setSelectedToken}
           setAmount={setMaxBalance}
@@ -497,10 +461,10 @@ export function Transfer() {
         <ChainSelectionDialog
           open={openChainDialog}
           setOpen={setOpenChainDialog}
-          isPrivacy={type ? (type === "privacy" ? true : false) : false}
-          chains={CHAINS.testnet}
+          chains={getFilteredChains()}
           selectedChain={selectedChain}
           setSelectedChain={setSelectedChain}
+          isPrivacy={type ? (type === "privacy" ? true : false) : false}
         />
 
         <div className="relative flex gap-4 w-full items-center justify-center">
@@ -545,7 +509,11 @@ export function Transfer() {
                   ) : (
                     <div className="relative size-8">
                       <img
-                        src={selectedToken.nativeToken.logo}
+                        src={
+                          selectedToken?.nativeToken
+                            ? selectedToken.nativeToken.logo
+                            : selectedToken.token.logo
+                        }
                         alt="ic"
                         className="object-contain w-full h-full"
                       />
@@ -565,7 +533,9 @@ export function Transfer() {
                     {selectedToken ? (
                       <div className="flex flex-col items-start text-start">
                         <p className="text-sm">
-                          {selectedToken.nativeToken.name}
+                          {selectedToken?.nativeToken
+                            ? selectedToken.nativeToken.name
+                            : selectedToken.token.name}
                         </p>
                         <p className="text-[10px] text-neutral-400">
                           {selectedToken.chainName}
@@ -641,8 +611,8 @@ export function Transfer() {
               <div className="flex relative">
                 <div className="flex flex-col items-end justify-center text-end right-16 pr-2 absolute h-full top-0 pointer-events-none">
                   <p className="text-xs text-[#A1A1A3]">Balance</p>
-                  <p className="text-[#A1A1A3] text-xs whitespace-nowrap">
-                    {maxBalance} {selectedToken?.nativeToken?.symbol || ""}
+                  <p className="text-[#A1A1A3] text-sm">
+                    {formatCurrency(parseFloat(maxBalance.toFixed(5)), "")}
                   </p>
                 </div>
 
@@ -658,6 +628,7 @@ export function Transfer() {
                 </button>
               </div>
             </div>
+            <div className="text-red-500 text-sm">{error}</div>
           </div>
         </div>
 

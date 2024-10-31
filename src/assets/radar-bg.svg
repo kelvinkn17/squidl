@@ -1,20 +1,99 @@
-<svg viewBox="0 0 1066 1066" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_123_2)">
-<circle cx="532.319" cy="534.905" r="488.307" stroke="black" stroke-opacity="0.1" stroke-width="1.97296"/>
-<circle cx="531.332" cy="535.891" r="390.842" stroke="black" stroke-opacity="0.1" stroke-width="1.57916"/>
-<circle cx="532.319" cy="534.904" r="301.254" stroke="black" stroke-opacity="0.1" stroke-width="1.21719"/>
-<circle cx="532.319" cy="534.904" r="204.774" stroke="black" stroke-opacity="0.1" stroke-width="0.827369"/>
-<circle cx="532.319" cy="534.904" r="126.015" stroke="black" stroke-opacity="0.1" stroke-width="0.50915"/>
-<circle cx="532.319" cy="534.904" r="59.0694" stroke="black" stroke-opacity="0.1" stroke-width="0.238664"/>
-<line x1="531.333" y1="47.584" x2="531.333" y2="1022.22" stroke="black" stroke-opacity="0.1" stroke-width="1.97296"/>
-<line x1="43.0256" y1="531.945" x2="1017.67" y2="531.945" stroke="black" stroke-opacity="0.1" stroke-width="1.97296"/>
-<line x1="187.543" y1="188.938" x2="877.061" y2="878.456" stroke="black" stroke-opacity="0.05" stroke-width="1.97296"/>
-<line x1="188.409" y1="877.584" x2="877.584" y2="188.409" stroke="black" stroke-opacity="0.05" stroke-width="1.97296"/>
-<circle cx="531.332" cy="535.89" r="22.689" fill="#D9D9D9"/>
-</g>
-<defs>
-<clipPath id="clip0_123_2">
-<rect width="1066" height="1066" fill="white"/>
-</clipPath>
-</defs>
-</svg>
+<svg
+    viewBox="0 0 1066 1066"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <g clipPath="url(#clip0_123_2)">
+      <circle
+        cx={532.319}
+        cy={534.905}
+        r={488.307}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={1.97296}
+      />
+      <circle
+        cx={531.332}
+        cy={535.891}
+        r={390.842}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={1.57916}
+      />
+      <circle
+        cx={532.319}
+        cy={534.904}
+        r={301.254}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={1.21719}
+      />
+      <circle
+        cx={532.319}
+        cy={534.904}
+        r={204.774}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={0.827369}
+      />
+      <circle
+        cx={532.319}
+        cy={534.904}
+        r={126.015}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={0.50915}
+      />
+      <circle
+        cx={532.319}
+        cy={534.904}
+        r={59.0694}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={0.238664}
+      />
+      <line
+        x1={531.333}
+        y1={47.584}
+        x2={531.333}
+        y2={1022.22}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={1.97296}
+      />
+      <line
+        x1={43.0256}
+        y1={531.945}
+        x2={1017.67}
+        y2={531.945}
+        stroke="black"
+        strokeOpacity={0.1}
+        strokeWidth={1.97296}
+      />
+      <line
+        x1={187.543}
+        y1={188.938}
+        x2={877.061}
+        y2={878.456}
+        stroke="black"
+        strokeOpacity={0.05}
+        strokeWidth={1.97296}
+      />
+      <line
+        x1={188.409}
+        y1={877.584}
+        x2={877.584}
+        y2={188.409}
+        stroke="black"
+        strokeOpacity={0.05}
+        strokeWidth={1.97296}
+      />
+      <circle cx={531.332} cy={535.89} r={22.689} fill="#D9D9D9" />
+    </g>
+    <defs>
+      <clipPath id="clip0_123_2">
+        <rect width={1066} height={1066} fill="white" />
+      </clipPath>
+    </defs>
+  </svg>

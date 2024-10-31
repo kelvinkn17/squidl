@@ -15,19 +15,15 @@ export function aggregateAssets(stealthAddresses, { isNative, chainId, tokenAddr
 
       // If matching balance data is found, format and return the wallet info
       if (balanceData) {
-        let formattedAmount
-        if (isNative) {
-          formattedAmount = balanceData.balance * 10 ** 18;
-        } else {
-          formattedAmount = balanceData.balance * 10 ** balanceData.token.decimals;
-        }
+        // Convert balance to BN format to avoid scientific notation
+        const balanceBN = toBN(balanceData.balance, isNative ? 18 : balanceData.token.decimals);
 
         return {
           address: wallet.address || "",
           ephemeralPub: wallet.ephemeralPub || "",
           viewHint: wallet.viewHint,
           balance: balanceData.balance,
-          amount: formattedAmount.toString(),
+          amount: balanceBN.toString(), // Safe string representation of the large number
         };
       }
 
