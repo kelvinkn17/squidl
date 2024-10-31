@@ -200,7 +200,7 @@ export default function AliasDetail() {
 
             <button
               onClick={async () => {
-                onCopy(`http://localhost:5173/payment/${alias}`);
+                onCopy(`${fullAlias}`);
               }}
             >
               <Icons.copy

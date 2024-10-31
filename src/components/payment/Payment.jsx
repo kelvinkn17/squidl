@@ -3,9 +3,9 @@ import { Button, Spinner } from "@nextui-org/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { QRCode } from "react-qrcode-logo";
-import { useParams } from "react-router-dom";
+import { useLoaderData, useParams } from "react-router-dom";
 import useSWR from "swr";
-import { squidlAPI } from "../../api/squidl.js";
+import { squidlPublicAPI } from "../../api/squidl.js";
 import { shortenAddress } from "../../utils/string.js";
 import OnRampDialog from "../dialogs/OnrampDialog.jsx";
 import SuccessDialog from "../dialogs/SuccessDialog.jsx";
@@ -14,17 +14,24 @@ import { Icons } from "../shared/Icons.jsx";
 
 export default function Payment() {
   const isLoggedIn = useIsLoggedIn();
+  const loaderData = useLoaderData();
+
   const [openOnramp, setOpenOnramp] = useState(false);
   const [openSuccess, setOpenSuccess] = useState(false);
   const { setShowAuthFlow } = useDynamicContext();
   const { alias_url } = useParams();
 
+  const alias = loaderData ? loaderData.subdomain : alias_url;
+
+  console.log({ alias, loaderData });
+
   const [isAliasDataError, setAliasDataError] = useState(false);
+
   const { data: aliasData, isLoading: isLoadingAliasData } = useSWR(
-    `/stealth-address/aliases/${alias_url}/detail`,
+    alias ? `/stealth-address/aliases/${alias}/detail` : null,
     async (url) => {
       try {
-        const { data } = await squidlAPI.get(url);
+        const { data } = await squidlPublicAPI.get(url);
         console.log("aliasData", data);
         return data;
       } catch (error) {
