@@ -57,21 +57,17 @@ export const router = createBrowserRouter([
         path: "/private-details",
         element: <PrivateBalancePage />,
       },
+    ],
+  },
+  {
+    path: "/payment",
+    element: <PlainLayout />,
+    errorElement: <ErrorPage />,
+    children: [
       {
-        path: "/payment/:alias_url",
+        path: ":alias_url",
         element: <PaymentPage />,
       },
     ],
   },
-  // {
-  //   path: "/payment",
-  //   element: <PlainLayout />,
-  //   errorElement: <ErrorPage />,
-  //   children: [
-  //     {
-  //       path: "/payment",
-  //       element: <PaymentPage />,
-  //     },
-  //   ],
-  // },
 ]);
