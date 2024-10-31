@@ -17,12 +17,7 @@ export default function PaymentLinks() {
   const navigate = useNavigate();
   const [, setOpen] = useAtom(isCreateLinkDialogAtom);
 
-  const { userData: user } = useUser();
-
-  const { data: aliases } = useSWR("/stealth-address/aliases", async (url) => {
-    const { data } = await squidlAPI.get(url);
-    return data;
-  });
+  const { userData: user, assets } = useUser();
 
   return (
     <div
@@ -35,13 +30,22 @@ export default function PaymentLinks() {
       </h1>
 
       <div className="w-full flex flex-col px-6">
-        {aliases && aliases.length > 0 ? (
-          aliases.map((alias, idx) => {
+        {assets && assets.aliasesList.length > 0 ? (
+          assets.aliasesList.map((alias, idx) => {
             const bgImage = AVAILABLE_CARDS_BG[idx % AVAILABLE_CARDS_BG.length];
+            const colorScheme = CARDS_SCHEME[idx % CARDS_SCHEME.length];
+
             const userAlias = alias.alias
               ? `${alias.alias}.${user?.username}`
               : user?.username;
-            const colorScheme = CARDS_SCHEME[idx % CARDS_SCHEME.length];
+
+            let cardName = "";
+            if (alias.alias === "") {
+              cardName = `${user?.username}.squidl.me`;
+            } else {
+              cardName = `${alias.alias}.${user?.username}.squidl.me`;
+            }
+
             return (
               <motion.div
                 key={idx}
@@ -72,15 +76,16 @@ export default function PaymentLinks() {
                 <div
                   className={cnm(
                     "relative  px-6 py-5 w-full flex items-center justify-between",
-                    `${
-                      bgImage === "/assets/card-2.png"
-                        ? "text-black"
-                        : "text-white"
+                    `${bgImage === "/assets/card-2.png"
+                      ? "text-black"
+                      : "text-white"
                     }`
                   )}
                 >
-                  <p className="font-medium">{`${alias.alias}.${user?.username}.squidl.me`}</p>
-                  <p>${alias.balanceUsd.toLocaleString("en-US")}</p>
+                  <p className="font-medium">
+                    {cardName}
+                  </p>
+                  <p>${alias.balanceUSD.toLocaleString("en-US")}</p>
                 </div>
 
                 <div className="absolute left-5 bottom-6 flex items-center justify-between">

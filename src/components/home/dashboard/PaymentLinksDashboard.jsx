@@ -10,6 +10,7 @@ import { isCreateLinkDialogAtom } from "../../../store/dialog-store.js";
 import SquidLogo from "../../../assets/squidl-logo.svg?react";
 import { useEffect } from "react";
 import { formatCurrency } from "@coingecko/cryptoformat";
+import { useUser } from "../../../providers/UserProvider.jsx";
 
 export const AVAILABLE_CARDS_BG = [
   "/assets/card-1.png",
@@ -21,24 +22,25 @@ export const AVAILABLE_CARDS_BG = [
 export const CARDS_SCHEME = [0, 1, 2, 3];
 
 export default function PaymentLinksDashboard({ user }) {
+  const { assets } = useUser();
   const [isOpen, setOpen] = useAtom(isCreateLinkDialogAtom);
   const navigate = useNavigate();
   const isBackValue = useAtomValue(isBackAtom);
 
-  const {
-    data: aliases,
-    isLoading,
-    mutate,
-  } = useSWR("/stealth-address/aliases", async (url) => {
-    const { data } = await squidlAPI.get(url);
-    return data;
-  });
+  // const {
+  //   data: aliases,
+  //   isLoading,
+  //   mutate,
+  // } = useSWR("/stealth-address/aliases", async (url) => {
+  //   const { data } = await squidlAPI.get(url);
+  //   return data;
+  // });
 
-  useEffect(() => {
-    if (!isOpen) {
-      mutate();
-    }
-  }, [isOpen]);
+  // useEffect(() => {
+  //   if (!isOpen) {
+  //     mutate();
+  //   }
+  // }, [isOpen]);
 
   return (
     <div
@@ -81,7 +83,7 @@ export default function PaymentLinksDashboard({ user }) {
           See More
         </Button>
       </motion.div>
-      {isLoading ? (
+      {!assets ? (
         // create stacked skeleton
 
         <div className="w-full px-6 py-4">
@@ -89,14 +91,22 @@ export default function PaymentLinksDashboard({ user }) {
         </div>
       ) : (
         <div className="w-full flex flex-col px-6">
-          {aliases && aliases.length > 0 ? (
-            aliases.slice(0, 4).map((alias, idx) => {
+          {assets && assets.aliasesList.length > 0 ? (
+            assets.aliasesList.slice(0, 4).map((alias, idx) => {
               const bgImage =
                 AVAILABLE_CARDS_BG[idx % AVAILABLE_CARDS_BG.length];
               const userAlias = alias.alias
                 ? `${alias.alias}.${user?.username}`
                 : user?.username;
               const colorScheme = CARDS_SCHEME[idx % CARDS_SCHEME.length];
+
+              let cardName = "";
+              if (alias.alias === "") {
+                cardName = `${user?.username}.squidl.me`;
+              } else {
+                cardName = `${alias.alias}.${user?.username}.squidl.me`;
+              }
+
               return (
                 <motion.button
                   key={idx}
@@ -127,20 +137,17 @@ export default function PaymentLinksDashboard({ user }) {
                   <div
                     className={cnm(
                       "relative px-6 py-5 w-full flex items-center justify-between",
-                      `${
-                        bgImage === "/assets/card-2.png"
-                          ? "text-black"
-                          : "text-white"
+                      `${bgImage === "/assets/card-2.png"
+                        ? "text-black"
+                        : "text-white"
                       }`
                     )}
                   >
                     <p className="font-medium">
-                      {alias.alias ? `${alias.alias}.` : ``}
-                      {user?.username}
-                      .squidl.me
+                      {cardName}
                     </p>
                     <p>
-                      {formatCurrency(alias.balanceUsd, "USD", "en", false, {
+                      {formatCurrency(alias.balanceUSD, "USD", "en", false, {
                         significantFigures: 5,
                       })}
                     </p>

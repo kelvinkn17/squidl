@@ -4,49 +4,21 @@ import { useEffect } from "react";
 import { Spinner } from "@nextui-org/react";
 import AssetItem from "../alias/AssetItem.jsx";
 import { formatCurrency } from "@coingecko/cryptoformat";
+import { useUser } from "../../providers/UserProvider.jsx";
 
 export default function Assets() {
-  const { data: user, isLoading } = useSWR("/auth/me", async (url) => {
-    const { data } = await squidlAPI.get(url);
-    return data;
-  });
+  const { assets } = useUser();
 
-  const shouldFetchAssets = user?.username ? true : false;
-
-  const {
-    data: assetsData,
-    isLoading: isLoadingAssetsData,
-    mutate: mutateAssetsData,
-  } = useSWR(
-    shouldFetchAssets
-      ? `/user/wallet-assets/${user?.username}/all-assets`
-      : null,
-    async (url) => {
-      const { data } = await squidlAPI.get(url);
-      return data;
-    }
-  );
-
-  useEffect(() => {
-    if (!mutateAssetsData) return;
-
-    const interval = setInterval(() => {
-      mutateAssetsData();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [mutateAssetsData]);
-
-  const mergedAssets = assetsData?.aggregatedBalances
+  const mergedAssets = assets?.aggregatedBalances
     ? [
-        ...(assetsData.aggregatedBalances.native || []),
-        ...(assetsData.aggregatedBalances.erc20 || []),
-      ]
+      ...(assets.aggregatedBalances.native || []),
+      ...(assets.aggregatedBalances.erc20 || []),
+    ]
     : [];
 
   return (
     <div className={"relative flex w-full h-full"}>
-      {isLoadingAssetsData ? (
+      {!assets ? (
         <Spinner
           size="md"
           color="primary"
