@@ -1,12 +1,11 @@
 import { useDynamicContext, useIsLoggedIn } from "@dynamic-labs/sdk-react-core";
 import { Button, Spinner } from "@nextui-org/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { QRCode } from "react-qrcode-logo";
 import { useParams } from "react-router-dom";
 import useSWR from "swr";
 import { squidlAPI } from "../../api/squidl.js";
-import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { shortenAddress } from "../../utils/string.js";
 import OnRampDialog from "../dialogs/OnrampDialog.jsx";
 import SuccessDialog from "../dialogs/SuccessDialog.jsx";
@@ -17,13 +16,8 @@ export default function Payment() {
   const isLoggedIn = useIsLoggedIn();
   const [openOnramp, setOpenOnramp] = useState(false);
   const [openSuccess, setOpenSuccess] = useState(false);
-  const { setShowAuthFlow, primaryWallet } = useDynamicContext();
+  const { setShowAuthFlow } = useDynamicContext();
   const { alias_url } = useParams();
-  const [aliasAddress, setAliasAddress] = useState(null);
-  const [metaAdd, setMetaAdd] = useState(null);
-  const [isLoadingAlias, setLoading] = useState(false);
-
-  const { contract } = useWeb3();
 
   const [isAliasDataError, setAliasDataError] = useState(false);
   const { data: aliasData, isLoading: isLoadingAliasData } = useSWR(
@@ -66,33 +60,6 @@ export default function Payment() {
 
     setOpenSuccess(true);
   };
-
-  async function generateStealthAddress() {
-    setLoading(true);
-    try {
-      const auth = localStorage.getItem("auth_signer");
-      if (!auth) {
-        return toast.error("Signer not available");
-      }
-      const [metaAddress] = await contract.getMetaAddress.staticCall(
-        JSON.parse(auth),
-        0
-      );
-      const [address1, ePub1, tag1] =
-        await contract.generateStealthAddress.staticCall(metaAddress, 0);
-
-      console.log(address1);
-      setAliasAddress(address1);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    generateStealthAddress();
-  }, []);
 
   return (
     <>
@@ -162,7 +129,7 @@ export default function Payment() {
               <div className="bg-[#563EEA] rounded-3xl mt-7 p-5 flex flex-col items-center justify-center gap-4 w-full">
                 <div className="w-full bg-white overflow-hidden p-1 rounded-xl">
                   <QRCode
-                    value={aliasData.stealthAddress.ens}
+                    value={aliasData.stealthAddress.address}
                     qrStyle="dots"
                     logoImage="/assets/nouns.png"
                     logoHeight={30}

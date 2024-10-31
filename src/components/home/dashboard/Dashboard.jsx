@@ -15,14 +15,9 @@ import useSWR from "swr";
 import { shortenAddress } from "../../../utils/string.js";
 import toast from "react-hot-toast";
 import { Icons } from "../../shared/Icons.jsx";
-import { sleep } from "../../../utils/process.js";
 import { useNavigate } from "react-router-dom";
-import { mainBalance, privateBalance } from "../../../store/balance-store.js";
-import Experimental from "./Experimental.jsx";
 import { useUser } from "../../../providers/UserProvider.jsx";
-import { useWeb3 } from "../../../providers/Web3Provider.jsx";
 import { formatCurrency } from "@coingecko/cryptoformat";
-
 
 export default function Dashboard() {
   const [openQr, setOpenQr] = useState(false);
@@ -85,69 +80,44 @@ export default function Dashboard() {
 }
 
 function ReceiveCard({ setOpenQr, user, isLoading }) {
-  const [aliasAddress, setAliasAddress] = useState("");
-
-  const { contract } = useWeb3();
   const [loadingAlias, setLoading] = useState(false);
 
   const [mode, setMode] = useState("ens");
 
-  async function generateStealthAddress() {
-    console.log("Generating stealth address");
-    if (isLoading || !contract) return;
-
-    setLoading(true);
-    try {
-      const auth = localStorage.getItem("auth_signer");
-
-      if (!auth) {
-        return toast.error("Signer not available");
+  const { data: aliasDetailData, mutate: mutateAliasData } = useSWR(
+    `/stealth-address/aliases/${user?.username}/detail`,
+    async (url) => {
+      try {
+        setLoading(true);
+        const { data } = await squidlAPI.get(url);
+        console.log("aliasData", data);
+        return data;
+      } catch (error) {
+        console.error("Error fetching alias data", error);
+        return null;
+      } finally {
+        setLoading(false);
       }
-
-      const [metaAddress] = await contract.getMetaAddress.staticCall(
-        JSON.parse(auth),
-        0
-      );
-
-      const [address1, ePub1, tag1] =
-        await contract.generateStealthAddress.staticCall(metaAddress, 0);
-
-      console.log(address1);
-      setAliasAddress(address1);
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    generateStealthAddress();
-  }, [contract]);
-
-  // const { data: aliasDetailData, mutate: mutateAliasData } = useSWR(
-  //   `/stealth-address/aliases/${user}/detail`,
-  //   async (url) => {
-  //     try {
-  //       setLoading(true);
-  //       const { data } = await squidlAPI.get(url);
-  //       console.log("aliasData", data);
-  //       return data;
-  //     } catch (error) {
-  //       console.error("Error fetching alias data", error);
-  //       return null;
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   }
-  // );
+  );
 
   console.log({ user });
 
-  const onCopy = (text) => {
-    navigator.clipboard.writeText(
-      mode === "ens" ? `${user?.username}.squidl.me` : aliasAddress
-    );
+  const onCopy = () => {
+    let copyText;
+    if (mode === "ens" && user?.username) {
+      copyText = `${user?.username}.squidl.me`;
+    } else if (aliasDetailData?.stealthAddress?.address) {
+      copyText = aliasDetailData.stealthAddress.address;
+    } else {
+      toast.error("Address not available", {
+        duration: 1000,
+        position: "bottom-center",
+      });
+      return;
+    }
+
+    navigator.clipboard.writeText(copyText);
     toast.success("Copied to clipboard", {
       duration: 1000,
       position: "bottom-center",
@@ -198,7 +168,9 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
               loadingAlias ? (
                 <Skeleton className="flex rounded-full w-20 h-8" />
               ) : (
-                <p>{shortenAddress(aliasAddress)}</p>
+                <p>
+                  {shortenAddress(aliasDetailData?.stealthAddress?.address)}
+                </p>
               )
             ) : (
               <p>{user?.username}.squidl.me</p>
@@ -208,7 +180,7 @@ function ReceiveCard({ setOpenQr, user, isLoading }) {
         <div className="flex items-center gap-2">
           {mode === "address" ? (
             <button
-              onClick={() => generateStealthAddress()}
+              onClick={() => mutateAliasData()}
               className="bg-purply-50 size-9 rounded-full flex items-center justify-center"
             >
               <Icons.refresh className="text-[#563EEA] size-5" />

@@ -35,6 +35,8 @@ const confettiConfig = {
 export default function CreateLinkDialog() {
   const [isOpen, setOpen] = useAtom(isCreateLinkDialogAtom);
   const [step, setStep] = useState("one");
+  const [alias, setAlias] = useState("");
+
   const { data: user, isLoading } = useSWR("/auth/me", async (url) => {
     const { data } = await squidlAPI.get(url);
     return data;
@@ -57,13 +59,20 @@ export default function CreateLinkDialog() {
         </button>
 
         {step === "one" ? (
-          <StepOne setStep={setStep} isLoading={isLoading} user={user} />
+          <StepOne
+            setStep={setStep}
+            isLoading={isLoading}
+            user={user}
+            alias={alias}
+            setAlias={setAlias}
+          />
         ) : (
           <StepTwo
             isLoading={isLoading}
             user={user}
             setOpen={setOpen}
             setStep={setStep}
+            alias={alias}
           />
         )}
       </ModalContent>
@@ -71,9 +80,7 @@ export default function CreateLinkDialog() {
   );
 }
 
-function StepOne({ setStep, isLoading, user }) {
-  const [alias, setAlias] = useState("");
-
+function StepOne({ setStep, isLoading, user, alias, setAlias }) {
   const { contract } = useWeb3();
 
   async function handleUpdate() {
@@ -155,7 +162,7 @@ function StepOne({ setStep, isLoading, user }) {
   );
 }
 
-function StepTwo({ user, isLoading, setOpen, setStep }) {
+function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const navigate = useNavigate();
   const userWallets = useUserWallets();
@@ -204,12 +211,12 @@ function StepTwo({ user, isLoading, setOpen, setStep }) {
                   <Skeleton className="w-25 h-6" />
                 ) : (
                   <p className="text-neutral-200">
-                    freelance.{user?.username}.squidl.me
+                    ${alias}.{user?.username}.squidl.me
                   </p>
                 )}
               </h1>
               <button
-                onClick={() => onCopy(`freelance.${user?.username}.squidl.me`)}
+                onClick={() => onCopy(`${alias}.${user?.username}.squidl.me`)}
               >
                 <Icons.copy className="text-[#848484] size-4" />
               </button>
@@ -238,7 +245,7 @@ function StepTwo({ user, isLoading, setOpen, setStep }) {
         onClick={async () => {
           await navigator.share({
             title: "Link",
-            text: `reelance.${user?.username}.squidl.me`,
+            text: `${alias}.${user?.username}.squidl.me`,
           });
         }}
         className="h-16 rounded-full text-white flex items-center justify-center w-full mt-4 bg-purply-600"
