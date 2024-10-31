@@ -25,7 +25,7 @@ export default function AssetItem({
         </div>
         <div className="flex flex-col items-end">
           <h1 className="font-bold text-[#161618]">{balance}</h1>
-          <p className="font-medium text-[#A1A1A3] text-sm">${priceUSD}</p>
+          <p className="font-medium text-[#A1A1A3] text-sm">{priceUSD}</p>
         </div>
       </div>
     </div>

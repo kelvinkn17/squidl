@@ -221,7 +221,9 @@ export default function AliasDetail() {
                 scheme === "1" && "text-black"
               )}
             >
-              ${totalBalanceUSD}
+              {formatCurrency(totalBalanceUSD, "USD", "en", false, {
+                significantFigures: 5,
+              })}
             </h1>
           )}
 
@@ -336,12 +338,36 @@ export default function AliasDetail() {
                 return (
                   <AssetItem
                     key={idx}
-                    logoImg={item?.nativeToken ? item.nativeToken.logo : item.token.logo}
-                    balance={item.balance}
+                    logoImg={
+                      item?.nativeToken
+                        ? item.nativeToken.logo
+                        : item.token.logo
+                    }
+                    balance={`${formatCurrency(
+                      item.balance,
+                      item?.nativeToken
+                        ? item.nativeToken.symbol
+                        : item.token.symbol,
+                      "de",
+                      true,
+                      {
+                        significantFigures: 5,
+                      }
+                    )}`}
                     chainName={item.chainName}
                     chainLogo={item.chainLogo}
-                    priceUSD={item.priceUSD}
-                    tokenSymbol={item?.nativeToken ? item.nativeToken.symbol : item.token.symbol}
+                    priceUSD={formatCurrency(
+                      item.priceUSD,
+                      "USD",
+                      "en",
+                      false,
+                      { significantFigures: 5 }
+                    )}
+                    tokenSymbol={
+                      item?.nativeToken
+                        ? item.nativeToken.symbol
+                        : item.token.symbol
+                    }
                   />
                 );
               })}

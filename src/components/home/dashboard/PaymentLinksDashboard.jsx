@@ -9,6 +9,7 @@ import { squidlAPI } from "../../../api/squidl.js";
 import { isCreateLinkDialogAtom } from "../../../store/dialog-store.js";
 import SquidLogo from "../../../assets/squidl-logo.svg?react";
 import { useEffect } from "react";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 export const AVAILABLE_CARDS_BG = [
   "/assets/card-1.png",
@@ -138,7 +139,11 @@ export default function PaymentLinksDashboard({ user }) {
                       {user?.username}
                       .squidl.me
                     </p>
-                    <p>${alias.balanceUsd.toLocaleString("en-US")}</p>
+                    <p>
+                      {formatCurrency(alias.balanceUsd, "USD", "en", false, {
+                        significantFigures: 5,
+                      })}
+                    </p>
                   </div>
 
                   <div className="absolute left-5 bottom-6 flex items-center justify-between">
