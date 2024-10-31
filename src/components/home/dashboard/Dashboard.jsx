@@ -237,7 +237,7 @@ function TotalBalance() {
                 setMode("available");
               }}
               className={cnm(
-                "w-24 h-10 rounded-full flex items-center justify-center relative transition-colors",
+                "w-24 h-10 rounded-full flex items-center justify-center relative transition-colors pl-1",
                 mode === "ens" ? "text-black" : "text-neutral-500"
               )}
             >
@@ -248,7 +248,7 @@ function TotalBalance() {
                 setMode("private");
               }}
               className={cnm(
-                "w-24 h-9 rounded-full flex items-center justify-center relative transition-colors",
+                "w-24 h-10 rounded-full flex items-center justify-center relative transition-colors pr-1",
                 mode === "private" ? "text-white" : "text-neutral-500"
               )}
             >
