@@ -91,7 +91,7 @@ export default function PaymentLinksDashboard({ user }) {
         </div>
       ) : (
         <div className="w-full flex flex-col px-6">
-          {assets && assets.aliasesList.length > 0 ? (
+          {assets && assets.aliasesList && assets.aliasesList.length > 0 ? (
             assets.aliasesList.slice(0, 4).map((alias, idx) => {
               const bgImage =
                 AVAILABLE_CARDS_BG[idx % AVAILABLE_CARDS_BG.length];
@@ -137,15 +137,14 @@ export default function PaymentLinksDashboard({ user }) {
                   <div
                     className={cnm(
                       "relative px-6 py-5 w-full flex items-center justify-between",
-                      `${bgImage === "/assets/card-2.png"
-                        ? "text-black"
-                        : "text-white"
+                      `${
+                        bgImage === "/assets/card-2.png"
+                          ? "text-black"
+                          : "text-white"
                       }`
                     )}
                   >
-                    <p className="font-medium">
-                      {cardName}
-                    </p>
+                    <p className="font-medium">{cardName}</p>
                     <p>
                       {formatCurrency(alias.balanceUSD, "USD", "en", false, {
                         significantFigures: 5,
