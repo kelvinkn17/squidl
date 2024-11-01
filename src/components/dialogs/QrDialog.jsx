@@ -104,7 +104,7 @@ export default function QrDialog({ open, setOpen, qrUrl }) {
               <h1 className="font-medium text-lg text-[#F4F4F4]">
                 {user?.username}.squidl.me
               </h1>
-              <button onClick={() => onCopy("link")}>
+              <button onClick={() => onCopy(`${user?.username}.squidl.me`)}>
                 <Icons.copy className="text-primary-200" />
               </button>
             </div>
