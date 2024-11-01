@@ -11,6 +11,24 @@ import TransactionsPage from "./pages/TransactionsPage.jsx";
 import MainBalancePage from "./pages/MainBalancePage.jsx";
 import PrivateBalancePage from "./pages/PrivateBalancePage.jsx";
 
+const EXCLUDED_SUBDOMAINS = [
+  "www",
+  "admin",
+  "api",
+  "app",
+  "auth",
+  "blog",
+  "cdn",
+  "dev",
+  "forum",
+  "mail",
+  "shop",
+  "support",
+  "test",
+  "server",
+  "webmail",
+];
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -21,7 +39,9 @@ export const router = createBrowserRouter([
 
       if (host.endsWith(suffix)) {
         const subdomain = host.slice(0, -suffix.length);
-        return { subdomain: subdomain || null };
+        if (!EXCLUDED_SUBDOMAINS.includes(subdomain))
+          return { subdomain: subdomain };
+        else return { subdomain: null };
       }
 
       return { subdomain: null };
