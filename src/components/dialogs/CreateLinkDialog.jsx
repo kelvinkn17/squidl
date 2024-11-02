@@ -17,8 +17,11 @@ import { useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { squidlAPI } from "../../api/squidl.js";
 import { useUserWallets } from "@dynamic-labs/sdk-react-core";
-import { useWeb3 } from "../../providers/Web3Provider.jsx";
 import { useEmitEvent } from "../../hooks/use-event.js";
+import { useUser } from "../../providers/UserProvider.jsx";
+import { CARDS_SCHEME } from "../home/dashboard/PaymentLinksDashboard.jsx";
+import SquidLogo from "../../assets/squidl-logo.svg?react";
+import { cnm } from "../../utils/style.js";
 
 const confettiConfig = {
   angle: 90, // Angle at which the confetti will explode
@@ -34,6 +37,8 @@ const confettiConfig = {
 };
 
 export default function CreateLinkDialog() {
+  const { assets } = useUser();
+
   const [isOpen, setOpen] = useAtom(isCreateLinkDialogAtom);
   const [step, setStep] = useState("one");
   const [alias, setAlias] = useState("");
@@ -42,6 +47,22 @@ export default function CreateLinkDialog() {
     const { data } = await squidlAPI.get(url);
     return data;
   });
+
+  const [initialAliasCount, setInitialAliasCount] = useState(0);
+
+  function reset() {
+    setInitialAliasCount(0);
+    setAlias("");
+  }
+
+  useEffect(() => {
+    if (assets?.aliasesList && initialAliasCount === 0) {
+      setInitialAliasCount(assets.aliasesList.length);
+    }
+  }, [assets, initialAliasCount]);
+
+  const nextColorScheme =
+    CARDS_SCHEME[initialAliasCount % CARDS_SCHEME.length] + 1;
 
   return (
     <Modal
@@ -53,7 +74,10 @@ export default function CreateLinkDialog() {
     >
       <ModalContent className="bg-white rounded-4xl p-8 max-w-[562px] flex flex-col items-start relative">
         <button
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
           className="absolute right-4 top-4 bg-[#F8F8F8] rounded-full p-3"
         >
           <Icons.close className="text-black size-6" />
@@ -66,6 +90,7 @@ export default function CreateLinkDialog() {
             user={user}
             alias={alias}
             setAlias={setAlias}
+            setInitialAliasCount={setInitialAliasCount}
           />
         ) : (
           <StepTwo
@@ -74,6 +99,8 @@ export default function CreateLinkDialog() {
             setOpen={setOpen}
             setStep={setStep}
             alias={alias}
+            nextColorScheme={nextColorScheme}
+            reset={reset}
           />
         )}
       </ModalContent>
@@ -81,7 +108,14 @@ export default function CreateLinkDialog() {
   );
 }
 
-function StepOne({ setStep, isLoading, user, alias, setAlias }) {
+function StepOne({
+  setStep,
+  isLoading,
+  user,
+  alias,
+  setAlias,
+  setInitialAliasCount,
+}) {
   const emitEvent = useEmitEvent("create-link-dialog");
 
   async function handleUpdate() {
@@ -99,13 +133,11 @@ function StepOne({ setStep, isLoading, user, alias, setAlias }) {
     const id = toast.loading("Creating alias address");
 
     try {
-      const { data } = await squidlAPI.post(
-        "/stealth-address/aliases/new-alias",
-        {
-          alias,
-        }
-      );
-      console.log({ data }, "ALIAS HAS BEEN CREATED");
+      const res = await squidlAPI.post("/stealth-address/aliases/new-alias", {
+        alias,
+      });
+      console.log({ res });
+      setInitialAliasCount(0);
       toast.success("Your alias has been created!");
       emitEvent({
         message: "alias-created",
@@ -170,7 +202,15 @@ function StepOne({ setStep, isLoading, user, alias, setAlias }) {
   );
 }
 
-function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
+function StepTwo({
+  user,
+  isLoading,
+  setOpen,
+  setStep,
+  alias,
+  nextColorScheme,
+  reset,
+}) {
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const navigate = useNavigate();
   const userWallets = useUserWallets();
@@ -202,7 +242,7 @@ function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
       {/* Card */}
       <div className="relative w-full h-full mt-5">
         <img
-          src="/assets/card.png"
+          src={`/assets/card-${nextColorScheme}.png`}
           alt="card-placeholder"
           className="absolute w-full h-full object-cover rounded-2xl"
         />
@@ -218,32 +258,51 @@ function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
                 {isLoading ? (
                   <Skeleton className="w-25 h-6" />
                 ) : (
-                  <p className="text-neutral-200">
-                    ${alias}.{user?.username}.squidl.me
+                  <p
+                    className={`${
+                      nextColorScheme === 2 ? "text-black " : "text-white"
+                    }`}
+                  >
+                    {alias}.{user?.username}.squidl.me
                   </p>
                 )}
               </h1>
               <button
                 onClick={() => onCopy(`${alias}.${user?.username}.squidl.me`)}
               >
-                <Icons.copy className="text-[#848484] size-4" />
+                <Icons.copy
+                  className={`size-4 ${
+                    nextColorScheme === 2 ? "text-black " : "text-white"
+                  }`}
+                />
               </button>
             </div>
           </div>
 
-          <h1 className="absolute top-1/2 -translate-y-1/2 text-white font-extrabold text-2xl">
+          <h1
+            className={`absolute top-1/2 -translate-y-1/2 font-extrabold text-2xl ${
+              nextColorScheme === 2 ? "text-black " : "text-white"
+            }`}
+          >
             $0
           </h1>
 
           <div className="absolute left-5 bottom-6 flex items-center justify-between">
-            <h1 className="text-[#484B4E] font-bold text-2xl">SQUIDL</h1>
+            <h1
+              className={`${
+                nextColorScheme === 2 ? "text-black " : "text-white"
+              } font-bold text-2xl`}
+            >
+              SQUIDL
+            </h1>
           </div>
 
           <div className="absolute right-5 bottom-6 flex items-center justify-between">
-            <img
-              src="/assets/squidl-logo-only.png"
-              alt="logo"
-              className="object-contain w-12 h-16"
+            <SquidLogo
+              className={cnm(
+                "w-12 ",
+                nextColorScheme === 2 ? "fill-black" : "fill-white"
+              )}
             />
           </div>
         </div>
@@ -263,8 +322,9 @@ function StepTwo({ user, isLoading, setOpen, setStep, alias }) {
       <Button
         onClick={() => {
           setOpen(false);
+          reset();
           setStep("one");
-          window.location.href = "/";
+          navigate("/");
         }}
         className="h-16 rounded-full bg-transparent flex items-center justify-center w-full mt-1 text-primary-600"
       >
