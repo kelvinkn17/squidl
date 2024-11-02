@@ -22,10 +22,11 @@ export default function BalanceChart() {
     async (url) => {
       const { data } = await squidlAPI.get(url);
       return data;
+    },
+    {
+      refreshInterval: 10000,
     }
   );
-
-  console.log({ chartData });
 
   if (isChartLoading) {
     return (

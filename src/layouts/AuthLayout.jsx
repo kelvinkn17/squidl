@@ -30,7 +30,7 @@ export default function AuthLayout() {
     return (
       <div className="flex min-h-screen w-full items-center justify-center px-5 md:px-10 bg-primary-50">
         <AsciiFlame />
-        <EngowlWatermark />
+        {/* <EngowlWatermark /> */}
 
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center text-center mb-4">
@@ -55,7 +55,7 @@ export default function AuthLayout() {
 
   return (
     <AuthProvider>
-      <EngowlWatermark />
+      {/* <EngowlWatermark /> */}
       <CreateLinkDialog />
       <GetStartedDialog />
       <Toaster />
