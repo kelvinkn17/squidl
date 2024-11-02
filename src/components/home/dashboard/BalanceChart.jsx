@@ -12,6 +12,19 @@ import { useUser } from "../../../providers/UserProvider";
 import { Spinner } from "@nextui-org/react";
 import dayjs from "dayjs";
 
+// default data for chart
+
+const data = [
+  {
+    date: "2021-09-01",
+    balance: 0,
+  },
+  {
+    date: "2021-09-02",
+    balance: 0,
+  },
+];
+
 export default function BalanceChart() {
   const { userData } = useUser();
 
@@ -28,6 +41,10 @@ export default function BalanceChart() {
     }
   );
 
+  console.log("chartData", chartData);
+
+  const isEmpty = chartData?.length === 0;
+
   if (isChartLoading) {
     return (
       <div className="w-full h-[300px] flex items-center justify-center">
@@ -40,7 +57,7 @@ export default function BalanceChart() {
     <div className="w-full h-full flex items-center justify-center overflow-hidden">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
-          data={chartData}
+          data={isEmpty ? data : chartData || data}
           margin={{
             bottom: 10,
             left: 0,
