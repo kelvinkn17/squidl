@@ -10,15 +10,21 @@ import useSWR from "swr";
 import { squidlAPI } from "../../../api/squidl";
 import { useUser } from "../../../providers/UserProvider";
 import { Spinner } from "@nextui-org/react";
+import dayjs from "dayjs";
 
 export default function BalanceChart() {
   const { userData } = useUser();
 
   const { data: chartData, isLoading: isChartLoading } = useSWR(
-    userData ? `/user/wallet-assets/${userData.username}/charts` : null,
+    userData
+      ? `/user/wallet-assets/${userData.username}/charts-new?isTestnet=false`
+      : null,
     async (url) => {
       const { data } = await squidlAPI.get(url);
       return data;
+    },
+    {
+      refreshInterval: 10000,
     }
   );
 
@@ -36,10 +42,10 @@ export default function BalanceChart() {
         <AreaChart
           data={chartData}
           margin={{
-            bottom: 0,
+            bottom: 10,
             left: 0,
             right: 0,
-            top: 0,
+            top: 10,
           }}
         >
           <defs>
@@ -70,7 +76,7 @@ const CustomTooltip = ({ active, payload }) => {
     return (
       <div className="bg-white border rounded-2xl p-4 max-w-xl flex flex-col items-start">
         <p className="bg-primary-50 text-primary px-3 py-2 rounded-xl text-xs">
-          {date}
+          {dayjs(date).format("YYYY-MM-DD")}
         </p>
         <p className="mt-4 text-lg font-medium">${balance.toFixed(2)}</p>
       </div>
