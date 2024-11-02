@@ -141,7 +141,7 @@ function StepOne({ setStep }) {
           id: 'loading-meta-address',
         }
       );
-      
+
       // Populate transaction
       const tx = await contract.register(authSigner);
       console.log("Populated Transaction:", tx);
@@ -210,9 +210,15 @@ function StepOne({ setStep }) {
           }}
           placeholder="your-username"
           variant="bordered"
+          isInvalid={!isUsernameAvailable && username}
         />
         <p className="absolute right-4 text-neutral-400">.squidl.me</p>
       </div>
+      {(isUsernameAvailable === false && username) &&
+        <div className="text-red-500 mt-1">
+          Username is already taken
+        </div>
+      }
       <Button
         onClick={handleUpdate}
         loading={loading || isCheckingUsername}

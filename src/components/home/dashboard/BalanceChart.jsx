@@ -41,6 +41,10 @@ export default function BalanceChart() {
     }
   );
 
+  console.log("chartData", chartData);
+
+  const isEmpty = chartData?.length === 0;
+
   if (isChartLoading) {
     return (
       <div className="w-full h-[300px] flex items-center justify-center">
@@ -53,7 +57,7 @@ export default function BalanceChart() {
     <div className="w-full h-full flex items-center justify-center overflow-hidden">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
-          data={chartData || data}
+          data={isEmpty ? data : chartData || data}
           margin={{
             bottom: 10,
             left: 0,
