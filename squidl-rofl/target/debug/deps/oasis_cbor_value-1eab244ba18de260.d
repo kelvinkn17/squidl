@@ -1,0 +1,9 @@
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/debug/deps/liboasis_cbor_value-1eab244ba18de260.rmeta: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/macros.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/reader.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/values.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/writer.rs
+
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/debug/deps/oasis_cbor_value-1eab244ba18de260.d: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/macros.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/reader.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/values.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/writer.rs
+
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/lib.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/macros.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/reader.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/values.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/oasis-cbor-value-0.5.1/src/writer.rs:

@@ -1,0 +1,10 @@
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/x86_64-unknown-linux-musl/release/deps/libidna-4881cf7275f42a87.rmeta: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/x86_64-unknown-linux-musl/release/deps/libidna-4881cf7275f42a87.rlib: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/x86_64-unknown-linux-musl/release/deps/idna-4881cf7275f42a87.d: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs
+
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/lib.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/punycode.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/idna-0.5.0/src/uts46_mapping_table.rs:

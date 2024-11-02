@@ -1,0 +1,8 @@
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/release/deps/libscale_info_derive-e31177c47c9eac19.dylib: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/attr.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/trait_bounds.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/utils.rs
+
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/release/deps/scale_info_derive-e31177c47c9eac19.d: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/attr.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/trait_bounds.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/utils.rs
+
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/lib.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/attr.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/trait_bounds.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/scale-info-derive-2.11.5/src/utils.rs:

@@ -1,0 +1,10 @@
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/x86_64-unknown-linux-musl/release/deps/libthiserror-45af98dacb3680eb.rmeta: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/aserror.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/display.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/provide.rs
+
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/x86_64-unknown-linux-musl/release/deps/libthiserror-45af98dacb3680eb.rlib: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/aserror.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/display.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/provide.rs
+
+/Users/kelvinadithya/Desktop/DEVELOPMENT/SQUIDL/squidl/squidl-rofl/target/x86_64-unknown-linux-musl/release/deps/thiserror-45af98dacb3680eb.d: /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/lib.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/aserror.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/display.rs /Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/provide.rs
+
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/lib.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/aserror.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/display.rs:
+/Users/kelvinadithya/.cargo/registry/src/index.crates.io-6f17d22bba15001f/thiserror-1.0.65/src/provide.rs:
