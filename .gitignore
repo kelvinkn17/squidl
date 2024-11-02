@@ -5,3 +5,4 @@ node_modules
 /target/
 /test-ledger/
 .env
+/squidl-rofl/target
