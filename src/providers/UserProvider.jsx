@@ -4,10 +4,12 @@ import { squidlAPI } from "../api/squidl";
 import { useAuth } from "./AuthProvider";
 import toast from "react-hot-toast";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import { useListenEvent } from "../hooks/use-event";
 
 const UserContext = createContext({
   assets: {},
   userData: {},
+  refetchAssets: () => {},
   isAssetsLoading: false,
 });
 
@@ -16,6 +18,7 @@ export default function UserProvider({ children }) {
   const { userData } = useAuth();
   const [assets, setAssets] = useLocalStorage("user-assets", null);
   const [isAssetsLoading, setAssetsLoading] = useState(false);
+  const [isAssetsRefetching, setAssetsRefetching] = useState(false);
 
   const handleFetchAssets = async () => {
     if (isAssetsLoading) return;
@@ -38,13 +41,38 @@ export default function UserProvider({ children }) {
     }
   };
 
+  const refetchAssets = async () => {
+    if (isAssetsRefetching) return;
+    setAssetsRefetching(true);
+    try {
+      console.log(`Fetching assets for ${userData.username}.squidl.eth`, {
+        userData,
+      });
+
+      const res = await squidlAPI.get(
+        `/user/wallet-assets/${userData.username}/all-assets`
+      );
+
+      setAssets(res.data);
+    } catch (error) {
+      console.error("Error fetching user assets", error);
+      toast.error("Error fetching user assets");
+    } finally {
+      setAssetsRefetching(false);
+    }
+  };
+
+  useListenEvent("create-link-dialog", () => {
+    refetchAssets();
+  });
+
   useEffect(() => {
     if (isSignedIn && userData && userData?.username) {
       // Fetch assets every 10 seconds
       handleFetchAssets();
 
       const interval = setInterval(() => {
-        handleFetchAssets();
+        // handleFetchAssets();
       }, 10_000);
 
       return () => {
@@ -58,6 +86,7 @@ export default function UserProvider({ children }) {
       value={{
         assets: assets,
         userData: userData,
+        refetchAssets: refetchAssets,
         isAssetsLoading,
       }}
     >

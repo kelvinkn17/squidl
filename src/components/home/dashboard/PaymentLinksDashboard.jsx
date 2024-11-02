@@ -4,11 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAtom, useAtomValue } from "jotai";
 import { isBackAtom } from "../../../store/payment-card-store.js";
 import { Button, Skeleton } from "@nextui-org/react";
-import useSWR from "swr";
-import { squidlAPI } from "../../../api/squidl.js";
 import { isCreateLinkDialogAtom } from "../../../store/dialog-store.js";
 import SquidLogo from "../../../assets/squidl-logo.svg?react";
-import { useEffect } from "react";
 import { formatCurrency } from "@coingecko/cryptoformat";
 import { useUser } from "../../../providers/UserProvider.jsx";
 
@@ -23,24 +20,9 @@ export const CARDS_SCHEME = [0, 1, 2, 3];
 
 export default function PaymentLinksDashboard({ user }) {
   const { assets } = useUser();
-  const [isOpen, setOpen] = useAtom(isCreateLinkDialogAtom);
+  const [, setOpen] = useAtom(isCreateLinkDialogAtom);
   const navigate = useNavigate();
   const isBackValue = useAtomValue(isBackAtom);
-
-  // const {
-  //   data: aliases,
-  //   isLoading,
-  //   mutate,
-  // } = useSWR("/stealth-address/aliases", async (url) => {
-  //   const { data } = await squidlAPI.get(url);
-  //   return data;
-  // });
-
-  // useEffect(() => {
-  //   if (!isOpen) {
-  //     mutate();
-  //   }
-  // }, [isOpen]);
 
   return (
     <div
@@ -101,6 +83,7 @@ export default function PaymentLinksDashboard({ user }) {
               const colorScheme = CARDS_SCHEME[idx % CARDS_SCHEME.length];
 
               let cardName = "";
+
               if (alias.alias === "") {
                 cardName = `${user?.username}.squidl.me`;
               } else {

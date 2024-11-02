@@ -18,6 +18,7 @@ import useSWR from "swr";
 import { squidlAPI } from "../../api/squidl.js";
 import { useUserWallets } from "@dynamic-labs/sdk-react-core";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
+import { useEmitEvent } from "../../hooks/use-event.js";
 
 const confettiConfig = {
   angle: 90, // Angle at which the confetti will explode
@@ -81,7 +82,7 @@ export default function CreateLinkDialog() {
 }
 
 function StepOne({ setStep, isLoading, user, alias, setAlias }) {
-  const { contract } = useWeb3();
+  const emitEvent = useEmitEvent("create-link-dialog");
 
   async function handleUpdate() {
     if (!alias) {
@@ -98,11 +99,17 @@ function StepOne({ setStep, isLoading, user, alias, setAlias }) {
     const id = toast.loading("Creating alias address");
 
     try {
-      const res = await squidlAPI.post("/stealth-address/aliases/new-alias", {
-        alias,
-      });
-      console.log({ res });
+      const { data } = await squidlAPI.post(
+        "/stealth-address/aliases/new-alias",
+        {
+          alias,
+        }
+      );
+      console.log({ data }, "ALIAS HAS BEEN CREATED");
       toast.success("Your alias has been created!");
+      emitEvent({
+        message: "alias-created",
+      });
       setStep("two");
     } catch (e) {
       console.log(e);
@@ -111,6 +118,7 @@ function StepOne({ setStep, isLoading, user, alias, setAlias }) {
       toast.dismiss(id);
     }
   }
+
   return (
     <>
       <p className="text-2xl font-semibold">Create payment link</p>
