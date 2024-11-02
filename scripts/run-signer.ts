@@ -2,9 +2,15 @@
 
 import type { BigNumberish, Signer } from 'ethers';
 import { ethers } from 'hardhat';
+import dotenv from 'dotenv';
+dotenv.config();
 
 async function main() {
   const StealthSigner = await ethers.getContractFactory('StealthSigner');
+
+  const users = await ethers.getSigners();
+  console.log('Users:', users.map((user) => user.address));
+
   const [user] = await ethers.getSigners();
   const network = await ethers.provider.getNetwork();
   const stealthSigner = await StealthSigner.deploy(user);

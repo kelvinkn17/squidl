@@ -5,6 +5,10 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomiclabs/hardhat-solhint";
 import "hardhat-tracer";
+import dotenv from 'dotenv';
+dotenv.config();
+
+console.log('PRIVATE_KEY:', process.env.PRIVATE_KEY);
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -21,16 +25,12 @@ const config: HardhatUserConfig = {
     'sapphire-testnet': {
       // This is Testnet! If you want Mainnet, add a new network config item.
       url: "https://testnet.sapphire.oasis.io",
-      accounts: process.env.PRIVATE_KEY
-        ? [process.env.PRIVATE_KEY]
-        : [],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 0x5aff,
     },
     'sapphire-localnet': {
       url: 'http://localhost:8545',
-      accounts: process.env.PRIVATE_KEY
-        ? [process.env.PRIVATE_KEY]
-        : [],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 0x5afd,
     },
   },
