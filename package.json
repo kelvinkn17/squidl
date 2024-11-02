@@ -8,7 +8,7 @@
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.11",
     "@nomiclabs/hardhat-solhint": "^4.0.1",
-    "@oasisprotocol/sapphire-contracts": "^0.2.10",
+    "@oasisprotocol/sapphire-contracts": "^0.2.11",
     "@oasisprotocol/sapphire-hardhat": "^2.19.4",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
@@ -23,6 +23,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "bech32": "^2.0.0",
     "dotenv": "^16.4.5",
     "fs-extra": "^11.2.0"
   }

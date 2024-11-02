@@ -8,6 +8,7 @@ import {Sapphire} from "@oasisprotocol/sapphire-contracts/contracts/Sapphire.sol
 import {EthereumUtils} from "@oasisprotocol/sapphire-contracts/contracts/EthereumUtils.sol";
 import {Secp256k1} from "./Secp256k1.sol";
 import {EIP155Signer} from "@oasisprotocol/sapphire-contracts/contracts/EIP155Signer.sol";
+import {Subcall} from "@oasisprotocol/sapphire-contracts/contracts/Subcall.sol";
 
 import {Enclave, autoswitch, Result} from "@oasisprotocol/sapphire-contracts/contracts/OPL.sol";
 
@@ -31,6 +32,8 @@ contract StealthSigner is Enclave {
     bytes32 public constant SIGNIN_TYPEHASH = keccak256(bytes(SIGNIN_TYPE));
     bytes32 public immutable DOMAIN_SEPARATOR;
 
+    bytes21 public roflAppID;
+
     struct UserKeyPair {
         bytes pub;
         bytes32 key;
@@ -50,7 +53,10 @@ contract StealthSigner is Enclave {
 
     // address public scanner;
 
-    constructor(address otherEnd) payable Enclave(otherEnd, autoswitch("bsc")) {
+    constructor(
+        address otherEnd,
+        bytes21 _roflAppID
+    ) payable Enclave(otherEnd, autoswitch("bsc")) {
         // scanner = _scanner;
 
         // Test Vectors
@@ -87,6 +93,8 @@ contract StealthSigner is Enclave {
         spendPairs[msg.sender] = UserKeyPair(spendPub, spendKey);
         owners[metaAddress] = msg.sender;
         metaAddresses[msg.sender].push(metaAddress);
+
+        roflAppID = _roflAppID;
     }
 
     struct SignIn {
@@ -566,6 +574,9 @@ contract StealthSigner is Enclave {
         bytes calldata ephemeralPub,
         bytes1 viewHint
     ) public {
+        // Ensure only the authorized ROFL app can submit.
+        Subcall.roflEnsureAuthorizedOrigin(roflAppID);
+
         // Calculate the hash of the ephemeral public key to save space and ensure uniqueness
         bytes32 ephemeralPubHash = keccak256(ephemeralPub);
 

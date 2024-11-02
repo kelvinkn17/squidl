@@ -3,7 +3,10 @@
 import type { BigNumberish, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import dotenv from 'dotenv';
+import { bech32 } from "bech32";
 dotenv.config();
+
+const roflAppID = "rofl1qqn9xndja7e2pnxhttktmecvwzz0yqwxsquqyxdf"
 
 async function main() {
   const StealthSigner = await ethers.getContractFactory('StealthSigner');
@@ -11,9 +14,14 @@ async function main() {
   const users = await ethers.getSigners();
   console.log('Users:', users.map((user) => user.address));
 
+  // Rofl ID handler
+  const { prefix, words } = bech32.decode(roflAppID);
+  const rawAppID = new Uint8Array(bech32.fromWords(words));
+  console.log('Rofl App ID:', rawAppID);
+
   const [user] = await ethers.getSigners();
   const network = await ethers.provider.getNetwork();
-  const stealthSigner = await StealthSigner.deploy(user);
+  const stealthSigner = await StealthSigner.deploy(user, rawAppID);
   await stealthSigner.connect(ethers.provider);
   const contractAddress = await stealthSigner.getAddress();
   console.log('StealthSigner deployed to:', contractAddress);
