@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import TokenSelectionDialog from "../dialogs/TokenSelectionDialog.jsx";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { squidlAPI } from "../../api/squidl.js";
 import ChainSelectionDialog from "../dialogs/ChainSelectionDialog.jsx";
 import { cnm } from "../../utils/style.js";
 import SuccessDialog from "../dialogs/SuccessDialog.jsx";
@@ -12,12 +11,11 @@ import { useUser } from "../../providers/UserProvider.jsx";
 import { aggregateAssets, toBN } from "../../utils/assets-utils.js";
 import { ethers, JsonRpcProvider } from "ethers";
 import { useWeb3 } from "../../providers/Web3Provider.jsx";
-import { CHAINS, TESTNET_CHAINS } from "../../config.js";
+import { CHAINS } from "../../config.js";
 import { BN } from "bn.js";
 import { confirmTransaction, handleKeyDown } from "./helpers.js";
 import { formatCurrency } from "@coingecko/cryptoformat";
 import { poolTransfer } from "../../lib/cBridge/cBridge.js";
-import { sleep } from "../../utils/process.js";
 
 // Make it so that the oasis sapphire (chainId: 23294) shows up on ChainSelectionDialog only when the exact token is selected
 const SUPPORTED_SAPPHIRE_BRIDGE = [
@@ -36,10 +34,9 @@ const SUPPORTED_SAPPHIRE_BRIDGE = [
 ];
 
 export function Transfer() {
-  const { userData } = useUser();
+  const { userData, address } = useUser();
   const [search] = useSearchParams();
   const type = search.get("type");
-  // const isPrivate = type === "private";
 
   const { assets, isAssetsLoading } = useUser();
   const { contract } = useWeb3();
@@ -55,18 +52,26 @@ export function Transfer() {
   const [maxBalance, setMaxBalance] = useState(0);
   const [error, setError] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(type === "private");
   const [openSuccess, setOpenSuccess] = useState(false);
   const [successData, setSuccessData] = useState();
 
-  // If the user is transferring to Oasis (23294), set isPrivate to true
   useEffect(() => {
     if (selectedChain && selectedChain.id === 23294) {
+      setIsPrivate(true);
+    } else if (type === "private") {
       setIsPrivate(true);
     } else {
       setIsPrivate(false);
     }
-  }, [selectedChain]);
+  }, [selectedChain, type]);
+
+  // if to oasis set destination to connected wallet address
+  useEffect(() => {
+    if (selectedChain && selectedChain.id === 23294 && address) {
+      setDestination(address);
+    }
+  }, [selectedChain, address]);
 
   // If selected token is changed, change the selected chain to the same chain as the token
   useEffect(() => {
@@ -573,7 +578,7 @@ export function Transfer() {
                   )}
                   <div
                     className={cnm(
-                      "font-medium",
+                      "font-medium text-start text-sm",
                       selectedToken ? "text-neutral-600" : "text-neutral-300"
                     )}
                   >
@@ -682,7 +687,7 @@ export function Transfer() {
         {/* Destination */}
         <div className="flex flex-col gap-2 w-full mt-3">
           <h1 className="text-sm text-[#A1A1A3]">Destination Address</h1>
-          {type === "main" ? (
+          {!isPrivate ? (
             <div className="flex flex-col gap-2">
               <input
                 className="h-16 w-full bg-white rounded-[16px] border-[2px] border-[#E4E4E4] px-6 bg-transparent transition-colors placeholder:text-[#A1A1A3] focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50"
