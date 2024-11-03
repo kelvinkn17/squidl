@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { sleep } from "../utils/process";
 
 export async function signAuthToken(signer, verifyingContract, chainId) {
   const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds (uint32 format)
@@ -54,6 +55,8 @@ async function main() {
   const tx = await stealthSigner.register(auth);
   console.log("Registering user in", tx.hash);
   await tx.wait();
+
+  await sleep(3_000);
 
   // const metaAddress = await user.getAddress();
   // const labelIndex = 0;
