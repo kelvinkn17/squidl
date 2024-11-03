@@ -8,6 +8,9 @@ edition = "2021"
 oasis-runtime-sdk = { git = "https://github.com/oasisprotocol/oasis-sdk", tag = "runtime-sdk/v0.9.6" }
 module-evm = { git = "https://github.com/oasisprotocol/oasis-sdk", tag = "runtime-sdk/v0.9.6", package = "oasis-runtime-sdk-evm" }
 rofl-utils = { git = "https://github.com/oasisprotocol/oasis-sdk", tag = "rofl-utils/v0.1.1" }
+serde = { version = "1.0", features = ["derive"] }
+hex = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 
 # Third-party dependencies.
 anyhow = "1.0"
