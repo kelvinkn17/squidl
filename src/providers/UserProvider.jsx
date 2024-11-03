@@ -5,9 +5,11 @@ import { useAuth } from "./AuthProvider";
 import toast from "react-hot-toast";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useListenEvent } from "../hooks/use-event";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 const UserContext = createContext({
   assets: {},
+  address: "",
   userData: {},
   refetchAssets: () => {},
   isAssetsLoading: false,
@@ -19,6 +21,8 @@ export default function UserProvider({ children }) {
   const [assets, setAssets] = useLocalStorage("user-assets", null);
   const [isAssetsLoading, setAssetsLoading] = useState(false);
   const [isAssetsRefetching, setAssetsRefetching] = useState(false);
+  const { primaryWallet } = useDynamicContext();
+  const address = primaryWallet?.address;
 
   const handleFetchAssets = async () => {
     if (isAssetsLoading) return;
@@ -88,6 +92,7 @@ export default function UserProvider({ children }) {
         userData: userData,
         refetchAssets: refetchAssets,
         isAssetsLoading,
+        address,
       }}
     >
       {children}
