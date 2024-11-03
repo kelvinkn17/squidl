@@ -43,7 +43,7 @@ export default function BalanceChart() {
 
   console.log("chartData", chartData);
 
-  const isEmpty = chartData?.length === 0 || chartData.length === 1;
+  const isEmpty = chartData?.length === 0 || chartData?.length === 1;
 
   if (isChartLoading) {
     return (
