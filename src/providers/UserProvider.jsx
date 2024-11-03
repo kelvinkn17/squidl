@@ -73,7 +73,7 @@ export default function UserProvider({ children }) {
 
       const interval = setInterval(() => {
         // handleFetchAssets();
-      }, 10_000);
+      }, 5_000);
 
       return () => {
         clearInterval(interval);
